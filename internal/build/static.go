@@ -19,8 +19,10 @@ func copyStaticFiles(outputDir, staticDir string, dirCreator file.DirCreator, fi
 			return err
 		}
 
+		outPath := filepath.Join(outputDir, relPath)
+
 		if info.IsDir() {
-			return util.CreateDir(dirCreator, filepath.Join(outputDir, relPath))
+			return util.CreateDir(dirCreator, outPath)
 		}
 
 		content, err := fileReader.ReadFile(path)
@@ -28,7 +30,7 @@ func copyStaticFiles(outputDir, staticDir string, dirCreator file.DirCreator, fi
 			return err
 		}
 
-		writer, err := fileCreator.Create(filepath.Join(outputDir, relPath))
+		writer, err := fileCreator.Create(outPath)
 		if err != nil {
 			return err
 		}
@@ -42,7 +44,7 @@ func copyStaticFiles(outputDir, staticDir string, dirCreator file.DirCreator, fi
 		return nil
 	})
 	if err != nil {
-		return ErrCopyStaticFile{Err: err}
+		return ErrCopyStaticFile{err}
 	}
 
 	return nil

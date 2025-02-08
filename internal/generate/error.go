@@ -2,14 +2,24 @@ package generate
 
 import "fmt"
 
-type ErrCreateFile struct {
-	Err error
+type ErrGenerateFile struct {
+	Path string
+	error
 }
 
-func (e ErrCreateFile) Error() string {
-	return fmt.Sprintf("failed to create file. %v", e.Err)
+func (e ErrGenerateFile) Error() string {
+	return fmt.Sprintf("failed to generate file %q. %v", e.Path, e.error)
 }
 
-func (e ErrCreateFile) Unwrap() error {
-	return e.Err
+func (e ErrGenerateFile) Unwrap() error { return e.error }
+
+type ErrGenerateFragment struct {
+	Name string
+	error
 }
+
+func (e ErrGenerateFragment) Error() string {
+	return fmt.Sprintf("failed to generate fragment %q. %v", e.Name, e.error)
+}
+
+func (e ErrGenerateFragment) Unwrap() error { return e.error }

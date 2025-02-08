@@ -16,7 +16,7 @@ type indexData struct {
 func (g Generator) GenerateIndex(posts []Post) error {
 	out, err := g.FileCreator.Create(filepath.Join(g.OutputDir, "index.html"))
 	if err != nil {
-		return ErrCreateFile{Err: err}
+		return ErrGenerateFile{"index.html", err}
 	}
 	defer out.Close()
 
@@ -26,5 +26,10 @@ func (g Generator) GenerateIndex(posts []Post) error {
 		Posts:  posts,
 	}
 
-	return tmpl.Process("index.html", out, indexData)
+	err = tmpl.Process("index.html", out, indexData)
+	if err != nil {
+		return ErrGenerateFile{"index.html", err}
+	}
+
+	return nil
 }

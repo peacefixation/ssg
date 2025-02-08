@@ -72,29 +72,29 @@ func (g Generator) GeneratePosts() ([]Post, error) {
 func (g Generator) GeneratePost(path string) (Post, error) {
 	content, err := g.FileReader.ReadFile(path)
 	if err != nil {
-		return Post{}, err
+		return Post{}, ErrGenerateFile{path, err}
 	}
 
 	frontMatter, content, err := parse.ParseFrontmatter(content)
 	if err != nil {
-		return Post{}, err
+		return Post{}, ErrGenerateFile{path, err}
 	}
 
 	htmlContent, err := parse.ParseGoldmark(content)
 	if err != nil {
-		return Post{}, err
+		return Post{}, ErrGenerateFile{path, err}
 	}
 
 	outputFilename, err := generateOutputFilename(path)
 	if err != nil {
-		return Post{}, err
+		return Post{}, ErrGenerateFile{path, err}
 	}
 
 	outputPath := filepath.Join(outputPostsDir, outputFilename)
 
 	date, err := time.Parse(time.RFC3339, frontMatter.Date)
 	if err != nil {
-		return Post{}, err
+		return Post{}, ErrGenerateFile{path, err}
 	}
 
 	post := Post{
@@ -110,18 +110,18 @@ func (g Generator) GeneratePost(path string) (Post, error) {
 
 	post.ListItem, err = g.GeneratePostListItem(post)
 	if err != nil {
-		return post, err
+		return post, ErrGenerateFile{path, err}
 	}
 
 	out, err := g.FileCreator.Create(filepath.Join(g.OutputDir, outputPath))
 	if err != nil {
-		return post, ErrCreateFile{Err: err}
+		return post, ErrGenerateFile{path, err}
 	}
 	defer out.Close()
 
 	err = tmpl.Process("post.html", out, post)
 	if err != nil {
-		return post, err
+		return post, ErrGenerateFile{path, err}
 	}
 
 	return post, nil

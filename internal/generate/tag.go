@@ -45,9 +45,10 @@ func groupPostsByTag(posts []Post) map[string][]Post {
 }
 
 func (g Generator) generateTagPage(tagDir, tag string, tagPosts []Post) error {
-	out, err := g.FileCreator.Create(filepath.Join(tagDir, tag+".html"))
+	path := filepath.Join(tagDir, tag+".html")
+	out, err := g.FileCreator.Create(path)
 	if err != nil {
-		return ErrCreateFile{Err: err}
+		return ErrGenerateFile{path, err}
 	}
 	defer out.Close()
 
@@ -56,6 +57,9 @@ func (g Generator) generateTagPage(tagDir, tag string, tagPosts []Post) error {
 		Tag:    tag,
 		Posts:  tagPosts,
 	})
+	if err != nil {
+		return ErrGenerateFile{path, err}
+	}
 
-	return err
+	return nil
 }

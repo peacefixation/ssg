@@ -16,7 +16,7 @@ type LinksPageData struct {
 func (g Generator) GenerateLinksPage(links []model.Link) error {
 	out, err := g.FileCreator.Create(filepath.Join(g.OutputDir, "links.html"))
 	if err != nil {
-		return ErrCreateFile{Err: err}
+		return ErrGenerateFile{"links.html", err}
 	}
 	defer out.Close()
 
@@ -25,5 +25,10 @@ func (g Generator) GenerateLinksPage(links []model.Link) error {
 		Links:  links,
 	}
 
-	return tmpl.Process("links.html", out, linksPageData)
+	err = tmpl.Process("links.html", out, linksPageData)
+	if err != nil {
+		return ErrGenerateFile{"links.html", err}
+	}
+
+	return nil
 }

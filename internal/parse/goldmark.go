@@ -2,6 +2,7 @@ package parse
 
 import (
 	"bytes"
+	"fmt"
 
 	formatters_html "github.com/alecthomas/chroma/formatters/html"
 	"github.com/yuin/goldmark"
@@ -9,6 +10,14 @@ import (
 	"github.com/yuin/goldmark/extension"
 	"github.com/yuin/goldmark/renderer/html"
 )
+
+type ErrConvertMarkdownToHTML struct{ error }
+
+func (e ErrConvertMarkdownToHTML) Error() string {
+	return fmt.Sprintf("failed to convert markdown to HTML. %v", e.error)
+}
+
+func (e ErrConvertMarkdownToHTML) Unwrap() error { return e.error }
 
 func ParseGoldmark(content []byte) (string, error) {
 	md := goldmark.New(
@@ -29,7 +38,7 @@ func ParseGoldmark(content []byte) (string, error) {
 
 	var htmlBuf bytes.Buffer
 	if err := md.Convert(content, &htmlBuf); err != nil {
-		return "", err
+		return "", ErrConvertMarkdownToHTML{err}
 	}
 
 	return htmlBuf.String(), nil

@@ -3,11 +3,20 @@ package parse
 import (
 	"bytes"
 	"errors"
+	"fmt"
 
 	"gopkg.in/yaml.v2"
 )
 
 var errInvalidFrontmatter = errors.New("invalid frontmatter")
+
+type ErrParseFrontMatter struct{ error }
+
+func (e ErrParseFrontMatter) Error() string {
+	return fmt.Sprintf("failed to parse frontmatter. %v", e.error)
+}
+
+func (e ErrParseFrontMatter) Unwrap() error { return e.error }
 
 var delimiter = []byte("---")
 
@@ -27,8 +36,8 @@ func ParseFrontmatter(content []byte) (*Frontmatter, []byte, error) {
 	var frontMatter Frontmatter
 	err := yaml.Unmarshal(parts[1], &frontMatter)
 	if err != nil {
-		return nil, content, err
+		return nil, content, ErrParseFrontMatter{err}
 	}
 
-	return &frontMatter, bytes.Join(parts[2:], delimiter), nil
+	return &frontMatter, bytes.Join(parts[2:], delimiter), nil // TODO: is this Join necessary?
 }
