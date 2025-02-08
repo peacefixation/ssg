@@ -2,7 +2,6 @@ package generate
 
 import (
 	"html/template"
-	"os"
 	"path/filepath"
 
 	"github.com/peacefixation/static-site-generator/internal/model"
@@ -15,7 +14,7 @@ type LinksPageData struct {
 }
 
 func (g Generator) GenerateLinksPage(links []model.Link) error {
-	out, err := os.Create(filepath.Join(g.OutputDir, "links.html"))
+	out, err := g.FileCreator.Create(filepath.Join(g.OutputDir, "links.html"))
 	if err != nil {
 		return ErrCreateFile{Err: err}
 	}

@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"github.com/peacefixation/static-site-generator/internal/build"
+	"github.com/peacefixation/static-site-generator/internal/file"
 	"github.com/peacefixation/static-site-generator/internal/parse"
 	"github.com/peacefixation/static-site-generator/internal/watcher"
 )
@@ -56,8 +57,10 @@ func main() {
 		Links:       linkData.Links,
 	}
 
+	fileCreator := file.OSFileCreator{}
+
 	// build the site
-	err = build.BuildSite(buildConfig)
+	err = build.BuildSite(buildConfig, fileCreator)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -83,7 +86,7 @@ func main() {
 		fmt.Println("Watching for changes...")
 		watchLocations := []string{*configDir, *contentDir, *staticDir, *templateDir}
 		err := watcher.Watch(watchLocations, func() error {
-			return build.BuildSite(buildConfig)
+			return build.BuildSite(buildConfig, fileCreator)
 		})
 		if err != nil {
 			log.Fatal(err)

@@ -1,6 +1,7 @@
 package build
 
 import (
+	"github.com/peacefixation/static-site-generator/internal/file"
 	"github.com/peacefixation/static-site-generator/internal/generate"
 	"github.com/peacefixation/static-site-generator/internal/model"
 	"github.com/peacefixation/static-site-generator/internal/util"
@@ -18,7 +19,7 @@ type Config struct {
 	Links          []model.Link
 }
 
-func BuildSite(config Config) error {
+func BuildSite(config Config, fileCreator file.FileCreator) error {
 	err := util.CreateDir(config.OutputDir)
 	if err != nil {
 		return err
@@ -33,7 +34,7 @@ func BuildSite(config Config) error {
 		return err
 	}
 
-	generator := generate.NewGenerator(config.ContentDir, config.TemplateDir, config.OutputDir, headerFragment, config.Title)
+	generator := generate.NewGenerator(config.ContentDir, config.TemplateDir, config.OutputDir, headerFragment, config.Title, fileCreator)
 
 	err = generator.GenerateLinksPage(config.Links)
 	if err != nil {
@@ -55,7 +56,7 @@ func BuildSite(config Config) error {
 		return err
 	}
 
-	err = copyStaticFiles(config.OutputDir, config.StaticDir)
+	err = copyStaticFiles(config.OutputDir, config.StaticDir, fileCreator)
 	if err != nil {
 		return err
 	}

@@ -113,7 +113,7 @@ func (g Generator) GeneratePost(path string) (Post, error) {
 		return post, err
 	}
 
-	out, err := os.Create(filepath.Join(g.OutputDir, outputPath))
+	out, err := g.FileCreator.Create(filepath.Join(g.OutputDir, outputPath))
 	if err != nil {
 		return post, ErrCreateFile{Err: err}
 	}

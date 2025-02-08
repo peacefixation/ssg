@@ -2,7 +2,6 @@ package generate
 
 import (
 	"html/template"
-	"os"
 	"path/filepath"
 
 	"github.com/peacefixation/static-site-generator/internal/tmpl"
@@ -46,7 +45,7 @@ func groupPostsByTag(posts []Post) map[string][]Post {
 }
 
 func (g Generator) generateTagPage(tagDir, tag string, tagPosts []Post) error {
-	out, err := os.Create(filepath.Join(tagDir, tag+".html"))
+	out, err := g.FileCreator.Create(filepath.Join(tagDir, tag+".html"))
 	if err != nil {
 		return ErrCreateFile{Err: err}
 	}
