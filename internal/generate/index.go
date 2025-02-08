@@ -23,7 +23,7 @@ func (g Generator) GenerateIndex(posts []Post) error {
 
 	indexData := indexData{
 		Header: g.HeaderFragment,
-		Title:  g.SiteConfig.Title,
+		Title:  g.Title,
 		Posts:  posts,
 	}
 

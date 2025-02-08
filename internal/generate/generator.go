@@ -2,8 +2,6 @@ package generate
 
 import (
 	"html/template"
-
-	"github.com/peacefixation/static-site-generator/internal/parse"
 )
 
 type Generator struct {
@@ -11,15 +9,15 @@ type Generator struct {
 	TemplateDir    string
 	OutputDir      string
 	HeaderFragment template.HTML
-	SiteConfig     parse.SiteConfig
+	Title          string
 }
 
-func NewGenerator(contentDir, templateDir, outputDir string, headerFragment template.HTML, siteConfig parse.SiteConfig) Generator {
+func NewGenerator(contentDir, templateDir, outputDir string, headerFragment template.HTML, title string) Generator {
 	return Generator{
 		ContentDir:     contentDir,
 		TemplateDir:    templateDir,
 		OutputDir:      outputDir,
 		HeaderFragment: headerFragment,
-		SiteConfig:     siteConfig,
+		Title:          title,
 	}
 }

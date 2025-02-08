@@ -5,16 +5,16 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/peacefixation/static-site-generator/internal/parse"
+	"github.com/peacefixation/static-site-generator/internal/model"
 	"github.com/peacefixation/static-site-generator/internal/tmpl"
 )
 
 type LinksPageData struct {
 	Header template.HTML
-	Links  []parse.Link
+	Links  []model.Link
 }
 
-func (g Generator) GenerateLinksPage(links []parse.Link) error {
+func (g Generator) GenerateLinksPage(links []model.Link) error {
 	out, err := os.Create(filepath.Join(g.OutputDir, "links.html"))
 	if err != nil {
 		return ErrCreateFile{Err: err}

@@ -2,17 +2,12 @@ package parse
 
 import (
 	"gopkg.in/yaml.v2"
+
+	"github.com/peacefixation/static-site-generator/internal/model"
 )
 
-type Link struct {
-	Name     string   `yaml:"name"`
-	URL      string   `yaml:"url"`
-	Category string   `yaml:"category"`
-	Tags     []string `yaml:"tags"`
-}
-
 type LinksData struct {
-	Links []Link `yaml:"links"`
+	Links []model.Link `yaml:"links"`
 }
 
 func ParseLinks(content []byte) (LinksData, error) {

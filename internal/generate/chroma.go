@@ -20,10 +20,10 @@ var (
 	defaultSyntaxHighlightStyle = styles.Monokai
 )
 
-func (g Generator) GenerateChromaCSS() error {
-	syntaxHighlightStyle, ok := styles.Registry[g.SiteConfig.SyntaxHighlightStyle]
+func (g Generator) GenerateChromaCSS(style string) error {
+	syntaxHighlightStyle, ok := styles.Registry[style]
 	if !ok {
-		fmt.Printf("Invalid syntax highlight style: '%s', using default.\n", g.SiteConfig.SyntaxHighlightStyle)
+		fmt.Printf("Invalid syntax highlight style: '%s', using default.\n", style)
 		syntaxHighlightStyle = defaultSyntaxHighlightStyle
 	}
 

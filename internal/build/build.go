@@ -1,10 +1,8 @@
 package build
 
 import (
-	"os"
-
 	"github.com/peacefixation/static-site-generator/internal/generate"
-	"github.com/peacefixation/static-site-generator/internal/parse"
+	"github.com/peacefixation/static-site-generator/internal/model"
 	"github.com/peacefixation/static-site-generator/internal/util"
 )
 
@@ -15,6 +13,9 @@ type Config struct {
 	StaticDir      string
 	SiteConfigPath string
 	LinkConfigPath string
+	Title          string
+	ChromaStyle    string
+	Links          []model.Link
 }
 
 func BuildSite(config Config) error {
@@ -23,18 +24,8 @@ func BuildSite(config Config) error {
 		return err
 	}
 
-	siteConfigContent, err := os.ReadFile(config.SiteConfigPath)
-	if err != nil {
-		return err
-	}
-
-	siteConfig, err := parse.ParseSiteConfig(siteConfigContent)
-	if err != nil {
-		return err
-	}
-
 	headerFragmentData := generate.HeaderFragmentData{
-		Title: siteConfig.Title,
+		Title: config.Title,
 	}
 
 	headerFragment, err := generate.GenerateHeaderFragment(headerFragmentData)
@@ -42,19 +33,9 @@ func BuildSite(config Config) error {
 		return err
 	}
 
-	linkContent, err := os.ReadFile(config.LinkConfigPath)
-	if err != nil {
-		return err
-	}
+	generator := generate.NewGenerator(config.ContentDir, config.TemplateDir, config.OutputDir, headerFragment, config.Title)
 
-	linkData, err := parse.ParseLinks(linkContent)
-	if err != nil {
-		return err
-	}
-
-	generator := generate.NewGenerator(config.ContentDir, config.TemplateDir, config.OutputDir, headerFragment, siteConfig)
-
-	err = generator.GenerateLinksPage(linkData.Links)
+	err = generator.GenerateLinksPage(config.Links)
 	if err != nil {
 		return err
 	}
@@ -79,7 +60,7 @@ func BuildSite(config Config) error {
 		return err
 	}
 
-	err = generator.GenerateChromaCSS()
+	err = generator.GenerateChromaCSS(config.ChromaStyle)
 	if err != nil {
 		return err
 	}
