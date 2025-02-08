@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peace Fixation - Links</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/link-list.css">
+</head>
+<body>
+    {{.Header}}
+    
+    <h1>Links</h1>
+    
+    <ul class="link-list">
+        {{range .Links}}
+            <li class="link-list-item">
+                <p class="link-name"><a href="{{.URL}}">{{.Name}}</a></p>
+                <div class="link-tags">
+                    {{range .Tags}}
+                        <span class="link-tag">{{.}}</span>
+                    {{end}}
+                </div>
+            </li>
+        {{end}}
+    </ul>
+</body>
+</html>
