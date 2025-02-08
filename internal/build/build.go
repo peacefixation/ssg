@@ -19,8 +19,8 @@ type Config struct {
 	Links          []model.Link
 }
 
-func BuildSite(config Config, fileCreator file.FileCreator) error {
-	err := util.CreateDir(config.OutputDir)
+func BuildSite(config Config, dirCreator file.DirCreator, fileReader file.FileReader, fileCreator file.FileCreator) error {
+	err := util.CreateDir(dirCreator, config.OutputDir)
 	if err != nil {
 		return err
 	}
@@ -34,7 +34,7 @@ func BuildSite(config Config, fileCreator file.FileCreator) error {
 		return err
 	}
 
-	generator := generate.NewGenerator(config.ContentDir, config.TemplateDir, config.OutputDir, headerFragment, config.Title, fileCreator)
+	generator := generate.NewGenerator(config.ContentDir, config.TemplateDir, config.StaticDir, config.OutputDir, headerFragment, config.Title, dirCreator, fileReader, fileCreator)
 
 	err = generator.GenerateLinksPage(config.Links)
 	if err != nil {
@@ -56,7 +56,7 @@ func BuildSite(config Config, fileCreator file.FileCreator) error {
 		return err
 	}
 
-	err = copyStaticFiles(config.OutputDir, config.StaticDir, fileCreator)
+	err = copyStaticFiles(config.OutputDir, config.StaticDir, dirCreator, fileReader, fileCreator)
 	if err != nil {
 		return err
 	}

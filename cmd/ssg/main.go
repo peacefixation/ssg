@@ -6,7 +6,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os"
 
 	"github.com/peacefixation/static-site-generator/internal/build"
 	"github.com/peacefixation/static-site-generator/internal/file"
@@ -24,8 +23,12 @@ func main() {
 	serve := flag.Bool("serve", false, "Serve the site")
 	flag.Parse()
 
+	dirCreator := file.OSDirCreator{}
+	fileCreator := file.OSFileCreator{}
+	fileReader := file.OSFileReader{}
+
 	// parse the site config
-	siteConfigContent, err := os.ReadFile(*configDir + "/site.yaml")
+	siteConfigContent, err := fileReader.ReadFile(*configDir + "/site.yaml")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -36,7 +39,7 @@ func main() {
 	}
 
 	// parse the links config
-	linkContent, err := os.ReadFile(*configDir + "/links.yaml")
+	linkContent, err := fileReader.ReadFile(*configDir + "/links.yaml")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -57,10 +60,8 @@ func main() {
 		Links:       linkData.Links,
 	}
 
-	fileCreator := file.OSFileCreator{}
-
 	// build the site
-	err = build.BuildSite(buildConfig, fileCreator)
+	err = build.BuildSite(buildConfig, dirCreator, fileReader, fileCreator)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -86,7 +87,7 @@ func main() {
 		fmt.Println("Watching for changes...")
 		watchLocations := []string{*configDir, *contentDir, *staticDir, *templateDir}
 		err := watcher.Watch(watchLocations, func() error {
-			return build.BuildSite(buildConfig, fileCreator)
+			return build.BuildSite(buildConfig, dirCreator, fileReader, fileCreator)
 		})
 		if err != nil {
 			log.Fatal(err)

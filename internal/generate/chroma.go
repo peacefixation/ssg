@@ -3,7 +3,6 @@ package generate
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"path/filepath"
 
 	"github.com/alecthomas/chroma"
@@ -32,7 +31,13 @@ func (g Generator) GenerateChromaCSS(style string) error {
 		return err
 	}
 
-	err = os.WriteFile(filepath.Join(g.OutputDir, cssDir, chromaCSSFileName), []byte(css), 0644)
+	writer, err := g.FileCreator.Create(filepath.Join(g.StaticDir, cssDir, chromaCSSFileName))
+	if err != nil {
+		return err
+	}
+	defer writer.Close()
+
+	_, err = writer.Write([]byte(css))
 	if err != nil {
 		return err
 	}

@@ -28,3 +28,27 @@ type OSFileWriter struct{}
 func (w OSFileWriter) WriteFile(filename string, data []byte, perm os.FileMode) error {
 	return os.WriteFile(filename, data, perm)
 }
+
+type FileReader interface {
+	ReadFile(name string) ([]byte, error)
+}
+
+// OSFileReader is an implementation of FileReader that reads from the file system.
+type OSFileReader struct{}
+
+// ReadFile reads the contents of a file from the file system.
+func (r OSFileReader) ReadFile(name string) ([]byte, error) {
+	return os.ReadFile(name)
+}
+
+type DirCreator interface {
+	MkdirAll(path string, perm os.FileMode) error
+}
+
+// OSDirCreator is an implementation of DirCreator that creates directories on the file system.
+type OSDirCreator struct{}
+
+// MkdirAll creates a directory and any necessary parents on the file system.
+func (c OSDirCreator) MkdirAll(path string, perm os.FileMode) error {
+	return os.MkdirAll(path, perm)
+}

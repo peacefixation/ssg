@@ -17,7 +17,7 @@ type tagData struct {
 func (g Generator) GenerateTagPages(posts []Post) error {
 	// create ouput directory
 	tagDir := filepath.Join(g.OutputDir, "tags")
-	if err := util.CreateDir(tagDir); err != nil {
+	if err := util.CreateDir(g.DirCreator, tagDir); err != nil {
 		return err
 	}
 

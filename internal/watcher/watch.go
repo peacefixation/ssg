@@ -10,6 +10,8 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
+// consider github.com/spf13/afero to allow testing
+
 func Watch(directories []string, process func() error) error {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {

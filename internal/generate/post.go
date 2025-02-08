@@ -34,7 +34,7 @@ type Post struct {
 }
 
 func (g Generator) GeneratePosts() ([]Post, error) {
-	err := util.CreateDir(filepath.Join(g.OutputDir, outputPostsDir))
+	err := util.CreateDir(g.DirCreator, filepath.Join(g.OutputDir, outputPostsDir))
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (g Generator) GeneratePosts() ([]Post, error) {
 }
 
 func (g Generator) GeneratePost(path string) (Post, error) {
-	content, err := os.ReadFile(path)
+	content, err := g.FileReader.ReadFile(path)
 	if err != nil {
 		return Post{}, err
 	}

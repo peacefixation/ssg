@@ -8,7 +8,7 @@ import (
 	"github.com/peacefixation/static-site-generator/internal/util"
 )
 
-func copyStaticFiles(outputDir, staticDir string, fileCreator file.FileCreator) error {
+func copyStaticFiles(outputDir, staticDir string, dirCreator file.DirCreator, fileReader file.FileReader, fileCreator file.FileCreator) error {
 	err := filepath.Walk(staticDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -20,10 +20,10 @@ func copyStaticFiles(outputDir, staticDir string, fileCreator file.FileCreator) 
 		}
 
 		if info.IsDir() {
-			return util.CreateDir(filepath.Join(outputDir, relPath))
+			return util.CreateDir(dirCreator, filepath.Join(outputDir, relPath))
 		}
 
-		content, err := os.ReadFile(path)
+		content, err := fileReader.ReadFile(path)
 		if err != nil {
 			return err
 		}

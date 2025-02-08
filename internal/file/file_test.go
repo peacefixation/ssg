@@ -2,6 +2,7 @@ package file_test
 
 import (
 	"bytes"
+	"errors"
 	"io"
 	"testing"
 )
@@ -84,5 +85,62 @@ func TestWriteFile(t *testing.T) {
 
 	if !bytes.Equal(got, content) {
 		t.Fatalf("got %q, want %q", got, content)
+	}
+}
+
+type MockFileReader struct {
+	Files map[string][]byte
+}
+
+func (r *MockFileReader) ReadFile(name string) ([]byte, error) {
+	content, ok := r.Files[name]
+	if !ok {
+		return nil, errors.New("file not found")
+	}
+	return content, nil
+}
+
+func TestReadFile(t *testing.T) {
+	reader := &MockFileReader{
+		Files: map[string][]byte{
+			"test.txt": []byte("Hello, world!"),
+		},
+	}
+
+	filename := "test.txt"
+	content, err := reader.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("ReadFile() failed: %v", err)
+	}
+
+	want := []byte("Hello, world!")
+
+	if !bytes.Equal(content, want) {
+		t.Fatalf("got %q, want %q", content, want)
+	}
+}
+
+type MockDirCreator struct {
+	Dirs map[string]bool
+}
+
+func (c *MockDirCreator) MkdirAll(path string, perm int) error {
+	c.Dirs[path] = true
+	return nil
+}
+
+func TestMkdirAll(t *testing.T) {
+	creator := &MockDirCreator{
+		Dirs: make(map[string]bool),
+	}
+
+	path := "test"
+	err := creator.MkdirAll(path, 0755)
+	if err != nil {
+		t.Fatalf("MkdirAll() failed: %v", err)
+	}
+
+	if !creator.Dirs[path] {
+		t.Fatalf("directory %q was not created", path)
 	}
 }
