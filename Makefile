@@ -8,5 +8,8 @@ init:
 new-post:
 	./scripts/new-post.sh
 
+links:
+	go run cmd/ssg/main.go -links
+
 clean:
 	rm -r output

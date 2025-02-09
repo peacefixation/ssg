@@ -6,9 +6,11 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 
 	"github.com/peacefixation/static-site-generator/internal/build"
 	"github.com/peacefixation/static-site-generator/internal/file"
+	"github.com/peacefixation/static-site-generator/internal/opengraph"
 	"github.com/peacefixation/static-site-generator/internal/parse"
 	"github.com/peacefixation/static-site-generator/internal/watcher"
 )
@@ -21,6 +23,7 @@ func main() {
 	outputDir := flag.String("output", "output", "Output directory path")
 	watch := flag.Bool("watch", false, "Watch for file changes")
 	serve := flag.Bool("serve", false, "Serve the site")
+	links := flag.Bool("links", false, "Fetch OpenGraph data for links and store it in links-og.yaml")
 	flag.Parse()
 
 	dirCreator := file.OSDirCreator{}
@@ -47,6 +50,30 @@ func main() {
 	linkData, err := parse.ParseLinks(linkContent)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	// if the links flag is given, update links.yaml and stop // TODO: this is a bit clunky
+	if *links {
+		// fetch OpenGraph data for links and update links.yaml
+		opengraph.Fetch(opengraph.DefaultHTTPClient(), linkData.Links)
+		err = parse.WriteLinks(linkData, fileCreator, *configDir+"/links-og.yaml")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// remove old links.yaml
+		err = os.Remove(*configDir + "/links.yaml")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// rename links-og.yaml to links.yaml
+		err = os.Rename(*configDir+"/links-og.yaml", *configDir+"/links.yaml")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		return // stop here
 	}
 
 	// configure the build
