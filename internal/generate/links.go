@@ -49,7 +49,7 @@ func hasOpenGraphData(og *opengraph.OpenGraph) bool {
 
 func processLinkFragment(link model.Link) (template.HTML, error) {
 	var buf bytes.Buffer
-	templateName := "link-list-item.html"
+	templateName := "link-list-item-std.html"
 
 	if hasOpenGraphData(link.OpenGraph) {
 		templateName = "link-list-item-og.html"
