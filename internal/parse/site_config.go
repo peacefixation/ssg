@@ -17,6 +17,7 @@ func (e ErrParseSiteConfig) Unwrap() error { return e.error }
 type SiteConfig struct {
 	Title                string `yaml:"title"`
 	SyntaxHighlightStyle string `yaml:"syntax-highlight-style"`
+	OpenGraphUserAgent   string `yaml:"open-graph-user-agent"`
 }
 
 func ParseSiteConfig(content []byte) (SiteConfig, error) {

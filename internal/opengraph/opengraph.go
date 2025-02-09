@@ -15,7 +15,6 @@ import (
 )
 
 var defaultHTTPTimeout = 30 * time.Second
-var userAgent = "peacefixation.github.io/static-site-generator:0.0.1" // TODO: add to site.yaml
 
 func DefaultHTTPClient() *http.Client {
 	return &http.Client{
@@ -23,7 +22,7 @@ func DefaultHTTPClient() *http.Client {
 	}
 }
 
-func Fetch(httpClient *http.Client, links []model.Link) {
+func Fetch(httpClient *http.Client, userAgent string, links []model.Link) {
 	var wg sync.WaitGroup
 
 	for i := range links {
@@ -34,7 +33,7 @@ func Fetch(httpClient *http.Client, links []model.Link) {
 
 		wg.Add(1)
 		go func(i int) {
-			og, err := fetch(httpClient, links[i].URL)
+			og, err := fetch(httpClient, userAgent, links[i].URL)
 			if err != nil {
 				log.Printf("failed to fetch OpenGraph data for %s: %v", links[i].URL, err)
 			} else {
@@ -47,7 +46,7 @@ func Fetch(httpClient *http.Client, links []model.Link) {
 	wg.Wait()
 }
 
-func fetch(httpClient *http.Client, url string) (*opengraph.OpenGraph, error) {
+func fetch(httpClient *http.Client, userAgent, url string) (*opengraph.OpenGraph, error) {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)

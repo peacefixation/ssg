@@ -55,7 +55,7 @@ func main() {
 	// if the links flag is given, update links.yaml and stop // TODO: this is a bit clunky
 	if *links {
 		// fetch OpenGraph data for links and update links.yaml
-		opengraph.Fetch(opengraph.DefaultHTTPClient(), linkData.Links)
+		opengraph.Fetch(opengraph.DefaultHTTPClient(), siteConfig.OpenGraphUserAgent, linkData.Links)
 		err = parse.WriteLinks(linkData, fileCreator, *configDir+"/links-og.yaml")
 		if err != nil {
 			log.Fatal(err)
