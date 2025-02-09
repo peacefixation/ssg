@@ -16,7 +16,7 @@ func GenerateHeaderFragment(data HeaderFragmentData) (template.HTML, error) {
 
 	err := tmpl.Process("header.html", &buf, data)
 	if err != nil {
-		return "", err
+		return "", ErrGenerateFragment{"header.html", err}
 	}
 
 	return template.HTML(buf.String()), nil

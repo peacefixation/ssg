@@ -18,7 +18,7 @@ func (g Generator) GenerateTagPages(posts []Post) error {
 	// create ouput directory
 	tagDir := filepath.Join(g.OutputDir, "tags")
 	if err := util.CreateDir(g.DirCreator, tagDir); err != nil {
-		return err
+		return ErrGenerateFile{tagDir, err}
 	}
 
 	tagMap := groupPostsByTag(posts)

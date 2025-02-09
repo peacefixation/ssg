@@ -28,18 +28,18 @@ func (g Generator) GenerateChromaCSS(style string) error {
 
 	css, err := generateChromaCSS(syntaxHighlightStyle)
 	if err != nil {
-		return err
+		return ErrGenerateFile{chromaCSSFileName, err}
 	}
 
 	writer, err := g.FileCreator.Create(filepath.Join(g.OutputDir, cssDir, chromaCSSFileName))
 	if err != nil {
-		return err
+		return ErrGenerateFile{chromaCSSFileName, err}
 	}
 	defer writer.Close()
 
 	_, err = writer.Write([]byte(css))
 	if err != nil {
-		return err
+		return ErrGenerateFile{chromaCSSFileName, err}
 	}
 
 	return nil
