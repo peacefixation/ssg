@@ -31,7 +31,7 @@ func (g Generator) GenerateChromaCSS(style string) error {
 		return err
 	}
 
-	writer, err := g.FileCreator.Create(filepath.Join(g.StaticDir, cssDir, chromaCSSFileName))
+	writer, err := g.FileCreator.Create(filepath.Join(g.OutputDir, cssDir, chromaCSSFileName))
 	if err != nil {
 		return err
 	}
