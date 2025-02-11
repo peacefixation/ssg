@@ -4,16 +4,17 @@ import (
 	"html/template"
 	"path/filepath"
 
+	"github.com/peacefixation/static-site-generator/internal/model"
 	"github.com/peacefixation/static-site-generator/internal/tmpl"
 )
 
 type indexData struct {
 	Header template.HTML
 	Title  string
-	Posts  []Post
+	Posts  []model.Post
 }
 
-func (g Generator) GenerateIndex(posts []Post) error {
+func (g Generator) GenerateIndex(posts []model.Post) error {
 	out, err := g.FileCreator.Create(filepath.Join(g.OutputDir, "index.html"))
 	if err != nil {
 		return ErrGenerateFile{"index.html", err}

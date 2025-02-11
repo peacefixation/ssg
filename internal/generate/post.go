@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/peacefixation/static-site-generator/internal/model"
 	"github.com/peacefixation/static-site-generator/internal/parse"
 	"github.com/peacefixation/static-site-generator/internal/tmpl"
 	"github.com/peacefixation/static-site-generator/internal/util"
@@ -21,25 +22,13 @@ const (
 	outputPostFileExt  = ".html"
 )
 
-type Post struct {
-	Title         string
-	Date          string
-	FormattedDate string
-	Description   string
-	URL           template.URL
-	Tags          []string
-	Header        template.HTML
-	Content       template.HTML
-	ListItem      template.HTML
-}
-
-func (g Generator) GeneratePosts() ([]Post, error) {
+func (g Generator) GeneratePosts() ([]model.Post, error) {
 	err := util.CreateDir(g.DirCreator, filepath.Join(g.OutputDir, outputPostsDir))
 	if err != nil {
 		return nil, err
 	}
 
-	var posts []Post
+	var posts []model.Post
 
 	err = filepath.Walk(filepath.Join(g.ContentDir, contentPostsDir), func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -69,35 +58,35 @@ func (g Generator) GeneratePosts() ([]Post, error) {
 	return posts, nil
 }
 
-func (g Generator) GeneratePost(path string) (Post, error) {
+func (g Generator) GeneratePost(path string) (model.Post, error) {
 	content, err := g.FileReader.ReadFile(path)
 	if err != nil {
-		return Post{}, ErrGenerateFile{path, err}
+		return model.Post{}, ErrGenerateFile{path, err}
 	}
 
 	frontMatter, content, err := parse.ParseFrontmatter(content)
 	if err != nil {
-		return Post{}, ErrGenerateFile{path, err}
+		return model.Post{}, ErrGenerateFile{path, err}
 	}
 
 	htmlContent, err := parse.ParseGoldmark(content)
 	if err != nil {
-		return Post{}, ErrGenerateFile{path, err}
+		return model.Post{}, ErrGenerateFile{path, err}
 	}
 
 	outputFilename, err := generateOutputFilename(path)
 	if err != nil {
-		return Post{}, ErrGenerateFile{path, err}
+		return model.Post{}, ErrGenerateFile{path, err}
 	}
 
 	outputPath := filepath.Join(outputPostsDir, outputFilename)
 
 	date, err := time.Parse(time.RFC3339, frontMatter.Date)
 	if err != nil {
-		return Post{}, ErrGenerateFile{path, err}
+		return model.Post{}, ErrGenerateFile{path, err}
 	}
 
-	post := Post{
+	post := model.Post{
 		Title:         frontMatter.Title,
 		Date:          frontMatter.Date,
 		FormattedDate: date.Format("January 2, 2006"),
@@ -127,7 +116,7 @@ func (g Generator) GeneratePost(path string) (Post, error) {
 	return post, nil
 }
 
-func (g Generator) GeneratePostListItem(post Post) (template.HTML, error) {
+func (g Generator) GeneratePostListItem(post model.Post) (template.HTML, error) {
 	var buf bytes.Buffer
 
 	err := tmpl.Process("post-list-item.html", &buf, post)
