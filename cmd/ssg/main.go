@@ -78,13 +78,14 @@ func main() {
 
 	// configure the build
 	buildConfig := build.Config{
-		ContentDir:  *contentDir,
-		TemplateDir: *templateDir,
-		OutputDir:   *outputDir,
-		StaticDir:   *staticDir,
-		Title:       siteConfig.Title,
-		ChromaStyle: siteConfig.SyntaxHighlightStyle,
-		Links:       linkData.Links,
+		ContentDir:        *contentDir,
+		TemplateDir:       *templateDir,
+		OutputDir:         *outputDir,
+		StaticDir:         *staticDir,
+		Title:             siteConfig.Title,
+		TitleFragmentPath: siteConfig.TitleFragmentPath,
+		ChromaStyle:       siteConfig.SyntaxHighlightStyle,
+		Links:             linkData.Links,
 	}
 
 	// build the site

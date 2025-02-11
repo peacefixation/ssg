@@ -8,15 +8,14 @@ import (
 )
 
 type Config struct {
-	ContentDir     string
-	TemplateDir    string
-	OutputDir      string
-	StaticDir      string
-	SiteConfigPath string
-	LinkConfigPath string
-	Title          string
-	ChromaStyle    string
-	Links          []model.Link
+	ContentDir        string
+	TemplateDir       string
+	OutputDir         string
+	StaticDir         string
+	Title             string
+	TitleFragmentPath string
+	ChromaStyle       string
+	Links             []model.Link
 }
 
 func BuildSite(config Config, dirCreator file.DirCreator, fileReader file.FileReader, fileCreator file.FileCreator) error {
@@ -26,7 +25,8 @@ func BuildSite(config Config, dirCreator file.DirCreator, fileReader file.FileRe
 	}
 
 	headerFragmentData := generate.HeaderFragmentData{
-		Title: config.Title,
+		Title:             config.Title,
+		TitleFragmentPath: config.TitleFragmentPath,
 	}
 
 	headerFragment, err := generate.GenerateHeaderFragment(headerFragmentData)
