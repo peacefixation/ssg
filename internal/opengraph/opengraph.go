@@ -26,6 +26,10 @@ func Fetch(httpClient *http.Client, userAgent string, links []model.Link) {
 	var wg sync.WaitGroup
 
 	for i := range links {
+		if !links[i].FetchOpenGraph {
+			continue
+		}
+
 		if i > 0 && i%100 == 0 {
 			log.Print("waiting for 1 second before fetching the next 100 links")
 			time.Sleep(1 * time.Second)
