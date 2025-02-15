@@ -7,10 +7,11 @@ import (
 )
 
 type Link struct {
-	Name      string               `yaml:"name"`
-	URL       string               `yaml:"url"`
-	Category  string               `yaml:"category"`
-	Tags      []string             `yaml:"tags"`
-	OpenGraph *opengraph.OpenGraph `yaml:"opengraph"`
-	Fragment  template.HTML        `yaml:"-"`
+	Name           string               `yaml:"name"`
+	URL            string               `yaml:"url"`
+	Category       string               `yaml:"category"`
+	Tags           []string             `yaml:"tags"`
+	FetchOpenGraph bool                 `yaml:"fetch-opengraph"`
+	OpenGraph      *opengraph.OpenGraph `yaml:"opengraph,omitempty"`
+	Fragment       template.HTML        `yaml:"-"`
 }

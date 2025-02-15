@@ -44,14 +44,14 @@ func (g Generator) GenerateLinksPage(links []model.Link) error {
 }
 
 func hasOpenGraphData(og *opengraph.OpenGraph) bool {
-	return og.Title != ""
+	return og != nil && og.Title != ""
 }
 
 func processLinkFragment(link model.Link) (template.HTML, error) {
 	var buf bytes.Buffer
 	templateName := "link-list-item-std.html"
 
-	if hasOpenGraphData(link.OpenGraph) {
+	if link.FetchOpenGraph && hasOpenGraphData(link.OpenGraph) {
 		templateName = "link-list-item-og.html"
 	}
 
