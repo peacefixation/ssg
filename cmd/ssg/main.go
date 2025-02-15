@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/peacefixation/static-site-generator/internal/build"
 	"github.com/peacefixation/static-site-generator/internal/file"
+	"github.com/peacefixation/static-site-generator/internal/generate"
 	"github.com/peacefixation/static-site-generator/internal/opengraph"
 	"github.com/peacefixation/static-site-generator/internal/parse"
 	"github.com/peacefixation/static-site-generator/internal/watcher"
@@ -76,8 +76,7 @@ func main() {
 		return // stop here
 	}
 
-	// configure the build
-	buildConfig := build.Config{
+	generator := generate.Generator{
 		ContentDir:        *contentDir,
 		TemplateDir:       *templateDir,
 		OutputDir:         *outputDir,
@@ -86,10 +85,12 @@ func main() {
 		TitleFragmentPath: siteConfig.TitleFragmentPath,
 		ChromaStyle:       siteConfig.SyntaxHighlightStyle,
 		Links:             linkData.Links,
+		DirCreator:        dirCreator,
+		FileReader:        fileReader,
+		FileCreator:       fileCreator,
 	}
 
-	// build the site
-	err = build.BuildSite(buildConfig, dirCreator, fileReader, fileCreator)
+	err = generator.GenerateSite()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -115,7 +116,8 @@ func main() {
 		fmt.Println("Watching for changes...")
 		watchLocations := []string{*configDir, *contentDir, *staticDir, *templateDir}
 		err := watcher.Watch(watchLocations, func() error {
-			return build.BuildSite(buildConfig, dirCreator, fileReader, fileCreator)
+			// return build.BuildSite(buildConfig, dirCreator, fileReader, fileCreator)
+			return generator.GenerateSite()
 		})
 		if err != nil {
 			log.Fatal(err)

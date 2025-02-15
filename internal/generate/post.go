@@ -97,7 +97,7 @@ func (g Generator) GeneratePost(path string) (model.Post, error) {
 		Content:       template.HTML(htmlContent),
 	}
 
-	post.ListItem, err = g.GeneratePostListItem(post)
+	post.ListItem, err = generatePostListItem(post)
 	if err != nil {
 		return post, ErrGenerateFile{path, err}
 	}
@@ -116,7 +116,7 @@ func (g Generator) GeneratePost(path string) (model.Post, error) {
 	return post, nil
 }
 
-func (g Generator) GeneratePostListItem(post model.Post) (template.HTML, error) {
+func generatePostListItem(post model.Post) (template.HTML, error) {
 	var buf bytes.Buffer
 
 	err := tmpl.Process("post-list-item.html", &buf, post)
