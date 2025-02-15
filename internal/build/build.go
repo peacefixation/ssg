@@ -24,23 +24,15 @@ func BuildSite(config Config, dirCreator file.DirCreator, fileReader file.FileRe
 		return err
 	}
 
-	headerFragmentData := generate.HeaderFragmentData{
-		Title:             config.Title,
-		TitleFragmentPath: config.TitleFragmentPath,
-	}
+	generator := generate.NewGenerator(config.ContentDir, config.TemplateDir, config.StaticDir, config.OutputDir, config.Title, config.TitleFragmentPath, dirCreator, fileReader, fileCreator)
 
-	headerFragment, err := generate.GenerateHeaderFragment(headerFragmentData)
+	// other pages use the header so this must be generated first
+	err = generator.GenerateHeaderFragment()
 	if err != nil {
 		return err
 	}
 
-	generator := generate.NewGenerator(config.ContentDir, config.TemplateDir, config.StaticDir, config.OutputDir, headerFragment, config.Title, dirCreator, fileReader, fileCreator)
-
-	err = generator.GenerateLinksPage(config.Links)
-	if err != nil {
-		return err
-	}
-
+	// posts are the core of the site, they are listed on the index page and used to generate the tag pages
 	posts, err := generator.GeneratePosts()
 	if err != nil {
 		return err
@@ -56,11 +48,17 @@ func BuildSite(config Config, dirCreator file.DirCreator, fileReader file.FileRe
 		return err
 	}
 
+	err = generator.GenerateLinksPage(config.Links)
+	if err != nil {
+		return err
+	}
+
 	err = copyStaticFiles(config.OutputDir, config.StaticDir, dirCreator, fileReader, fileCreator)
 	if err != nil {
 		return err
 	}
 
+	// chroma CSS is used to style code blocks on the post pages
 	err = generator.GenerateChromaCSS(config.ChromaStyle)
 	if err != nil {
 		return err
