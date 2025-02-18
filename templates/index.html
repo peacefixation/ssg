@@ -5,15 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{.Title}}</title>
     <link rel="stylesheet" href="/css/main.css">
-    <link rel="stylesheet" href="/css/post-list.css">
+    <script src="/js/list.js" defer></script>
 </head>
 <body>
     {{.Header}}
 
-    <ul class="post-list">
-        {{range .Posts}}
-            {{.ListItem}}
-        {{end}}
-    </ul>
+    <div id="list-container">
+        <ul class="list">
+            {{range .Posts}}
+                {{.ListItem}}
+            {{end}}
+            <li id="no-items"><p></p></li>
+        </ul>
+        <div id="list-filter">
+            <div id="tags"></div>
+            <div id="search"></div>
+        </div>
+    </div>
 </body>
 </html>

@@ -1,10 +1,10 @@
-<li class="post-list-item">
-    <h2><a href="/{{.URL}}" class="post-title">{{.Title}}</a></h2>
-    <span class="post-date">{{.FormattedDate}}</span>
-    <p class="post-description">{{.Description}}</p>
-    <div class="tags">
+<li class="list-item">
+    <h2 class="item-name"><a href="/{{.URL}}">{{.Title}}</a></h2>
+    <div class="item-date">{{.FormattedDate}}</div>
+    <p class="item-description">{{.Description}}</p>
+    <div class="item-tags">
         {{range .Tags}}
-        <a href="/tags/{{.}}.html" class="tag">{{.}}</a>
+        <a href="/tags/{{.}}.html" class="item-tag">{{.}}</a>
         {{end}}
     </div>
 </li>

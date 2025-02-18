@@ -5,15 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Peace Fixation - Links</title>
     <link rel="stylesheet" href="/css/main.css">
-    <link rel="stylesheet" href="/css/links.css">
+    <script src="/js/links.js" defer></script>
 </head>
 <body>
     {{.Header}}
 
-    <ul class="link-list">
-        {{range .Links}}
-            {{ .Fragment }}
-        {{end}}
-    </ul>
+    <div id="list-container">
+        <ul class="list">
+            {{range .Links}}
+                {{ .Fragment }}
+            {{end}}
+            <li id="no-items"><p></p></li>
+        </ul>
+        <div id="list-filter">
+            <div id="tags"></div>
+            <div id="search"></div>
+        </div>
+    </div>
 </body>
 </html>

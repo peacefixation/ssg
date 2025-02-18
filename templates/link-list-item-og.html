@@ -1,11 +1,9 @@
-<li class="link-list-item link-list-item-og">
-    <div class="link-detail">
-        <h2 class="link-name"><a href="{{.OpenGraph.URL}}">{{.OpenGraph.Title}}</a></h2>
-        <p class="link-description">{{.OpenGraph.Description}}</p>
-        <div class="link-tags">
-            {{range .Tags}}
-                <span class="link-tag">{{.}}</span>
-            {{end}}
-        </div>
+<li class="list-item">
+    <h2 class="item-name"><a href="{{.OpenGraph.URL}}">{{.OpenGraph.Title}}</a></h2>
+    <p class="item-description">{{.OpenGraph.Description}}</p>
+    <div class="item-tags">
+        {{range .Tags}}
+            <span class="item-tag">{{.}}</span>
+        {{end}}
     </div>
 </li>
