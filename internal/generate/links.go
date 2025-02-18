@@ -13,6 +13,7 @@ import (
 type LinksPageData struct {
 	Header template.HTML
 	Links  []model.Link
+	Title  string
 }
 
 func (g Generator) GenerateLinksPage(links []model.Link) error {
@@ -33,6 +34,7 @@ func (g Generator) GenerateLinksPage(links []model.Link) error {
 	linksPageData := LinksPageData{
 		Header: g.HeaderFragment,
 		Links:  links,
+		Title:  g.Title,
 	}
 
 	err = tmpl.Process("links.html", out, linksPageData)
@@ -49,7 +51,7 @@ func hasOpenGraphData(og *opengraph.OpenGraph) bool {
 
 func processLinkFragment(link model.Link) (template.HTML, error) {
 	var buf bytes.Buffer
-	templateName := "link-list-item-std.html"
+	templateName := "link-list-item.html"
 
 	if link.FetchOpenGraph && hasOpenGraphData(link.OpenGraph) {
 		templateName = "link-list-item-og.html"

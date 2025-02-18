@@ -1,6 +1,8 @@
 <li class="list-item">
-    <h2 class="item-name"><a href="/{{.URL}}">{{.Title}}</a></h2>
-    <div class="item-date">{{.FormattedDate}}</div>
+    <div class="item-header">
+        <h2 class="item-name"><a href="/{{.URL}}">{{.Title}}</a></h2>
+        <div class="item-date">{{.FormattedDate}}</div>
+    </div>
     <p class="item-description">{{.Description}}</p>
     <div class="item-tags">
         {{range .Tags}}

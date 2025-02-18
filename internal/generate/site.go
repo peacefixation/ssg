@@ -37,6 +37,11 @@ func (g Generator) GenerateSite() error {
 		return err
 	}
 
+	err = g.GenerateAboutPage()
+	if err != nil {
+		return err
+	}
+
 	err = copyStaticFiles(g.OutputDir, g.StaticDir, g.DirCreator, g.FileReader, g.FileCreator)
 	if err != nil {
 		return err
