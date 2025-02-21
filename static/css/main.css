@@ -111,7 +111,7 @@ a {
     line-height: 47px;
 
     &:hover {
-        animation: fill 0.8s ease-in-out infinite alternate;
+        animation: fill 0.8s ease infinite alternate;
     }
 }
 
@@ -120,6 +120,7 @@ a {
         fill: var(--link-color);
         stroke: var(--link-color);
         fill-opacity: 0.5;
+        stroke-opacity: 0.5;
     }
 
     100% {
@@ -219,12 +220,14 @@ a {
 
     #no-items {
         display: none;
-    }
-}
+        margin: 0 5px;
 
-.list {
-    list-style: none;
-    padding: 0;
+        p {
+            margin: 0;
+            padding: 0;
+            font-size: 0.9em;
+        }
+    }
 }
 
 .list-item {
