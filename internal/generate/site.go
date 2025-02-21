@@ -11,10 +11,12 @@ func (g Generator) GenerateSite() error {
 	}
 
 	// other pages use the header so this must be generated first
-	err = g.GenerateHeaderFragment()
+	headerFragment, err := g.GenerateHeaderFragment(g.Title)
 	if err != nil {
 		return err
 	}
+
+	g.HeaderFragment = headerFragment
 
 	// posts are the core of the site, they are listed on the index page and used to generate the tag pages
 	posts, err := g.GeneratePosts()

@@ -9,14 +9,12 @@
 <body>
     {{.Header}}
 
-    <h1>Posts tagged with {{.Tag}}</h1>
-
-    <main>
+    <div id="list-container">
         <ul class="list">
             {{range .Posts}}
                 {{.ListItem}}
             {{end}}
         </ul>
-    </main>
+    </div>
 </body>
 </html>

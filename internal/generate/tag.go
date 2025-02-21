@@ -57,8 +57,13 @@ func (g Generator) generateTagPage(tagDir, tag string, tagPosts []model.Post) er
 	}
 	defer out.Close()
 
+	headerFragment, err := g.GenerateHeaderFragment(util.CapitalizeFirstLetter(tag))
+	if err != nil {
+		return ErrGenerateFile{path, err}
+	}
+
 	err = tmpl.Process(filepath.Join(g.TemplateDir, tagPageTemplate), out, tagData{
-		Header: g.HeaderFragment,
+		Header: headerFragment,
 		Tag:    tag,
 		Posts:  tagPosts,
 	})

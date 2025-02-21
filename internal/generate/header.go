@@ -20,16 +20,16 @@ type HeaderFragmentData struct {
 
 const defaultTitleFragment = `<h1>{{.Title}}</h1>`
 
-func (g *Generator) GenerateHeaderFragment() error {
+func (g *Generator) GenerateHeaderFragment(title string) (template.HTML, error) {
 	data := HeaderFragmentData{
-		Title:             g.Title,
+		Title:             title,
 		TitleFragmentPath: g.TitleFragmentPath,
 	}
 
 	if data.TitleFragmentPath != "" {
 		titleFragment, err := g.generateTitleFragment(data.TitleFragmentPath, data.Title)
 		if err != nil {
-			return err
+			return "", err
 		}
 		data.TitleFragment = titleFragment
 	} else {
@@ -40,12 +40,10 @@ func (g *Generator) GenerateHeaderFragment() error {
 
 	err := tmpl.Process(filepath.Join(g.TemplateDir, headerFragmentTemplate), &buf, data)
 	if err != nil {
-		return ErrGenerateFragment{headerFragmentTemplate, err}
+		return "", ErrGenerateFragment{headerFragmentTemplate, err}
 	}
 
-	g.HeaderFragment = template.HTML(buf.String())
-
-	return nil
+	return template.HTML(buf.String()), nil
 }
 
 func (g *Generator) generateTitleFragment(path, title string) (template.HTML, error) {
