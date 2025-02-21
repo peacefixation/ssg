@@ -1,0 +1,303 @@
+:root {
+    --main-bg-color: rgb(50, 50, 50);
+    --main-bg-color-light: rgb(60, 60, 60);
+    --main-heading-color: rgb(200, 200, 200);
+    --main-text-color: rgb(200, 200, 200);
+    --main-border-color: rgb(100, 100, 100);
+    --secondary-text-color: rgb(150, 150, 150);
+    --link-color: rgb(0, 185, 170);
+    --link-hover-color: rgb(223, 82, 0);
+    --link-active-color: rgb(0, 200, 200);
+    --nav-link-color: rgb(0, 185, 170);
+    --nav-link-hover-color: rgb(200, 200, 200);
+    --nav-link-bg-hover-color: rgb(223, 82, 0);
+    --nav-link-active-color: rgb(200, 200, 200);
+    --nav-link-bg-active-color: rgb(200, 200, 200);
+
+    --color-rainbow-1: rgb(191, 64, 64);
+    --color-rainbow-2: rgb(191, 127, 64);
+    --color-rainbow-3: rgb(191, 191, 64);
+    --color-rainbow-4: rgb(127, 191, 64);
+    --color-rainbow-5: rgb(64, 191, 127);
+    --color-rainbow-6: rgb(64, 127, 191);
+    --color-rainbow-7: rgb(127, 64, 191);
+}
+
+body {
+    max-width: 800px;
+    min-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 1em;
+    background: var(--main-bg-color);
+    color: var(--main-text-color);
+}
+
+h1 {
+    font-size: 1.5em;
+}
+
+h2 {
+    font-size: 1.2em;
+}
+
+a {
+    color: var(--link-color);
+    text-decoration: none;
+
+    &:hover {
+        color: var(--link-hover-color);
+    }
+}
+
+#page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin: 0 auto;
+    border-bottom: var(--main-border-color) 1px solid;
+
+    #page-heading {
+        margin: 0;
+        padding: 0;
+
+        a {
+            display: block;
+            height: 47px;
+            margin-bottom: 3px;
+        }
+    }
+
+    nav {
+        flex: 1;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+
+        ul {
+            display: flex;
+            gap: 10px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+
+            li a {
+                color: var(--nav-link-color);
+                background-color: var(--nav-link-bg-color);
+                text-decoration: none;
+                padding: 0 5px;
+
+                &:hover {
+                    color: var(--nav-link-hover-color);
+                    background-color: var(--nav-link-bg-hover-color);
+                }
+
+                &:active {
+                    color: var(--nav-link-active-color);
+                }
+            }
+        }
+    }
+}
+
+#page-header svg text {
+    stroke-width: 1;
+    stroke: var(--main-heading-color);
+    fill: var(--main-heading-color);
+    font-weight: 500;
+    font-size: 32px;
+    line-height: 47px;
+
+    &:hover {
+        animation: fill 0.8s ease-in-out infinite alternate;
+    }
+}
+
+@keyframes fill {
+    0% {
+        fill: var(--link-color);
+        stroke: var(--link-color);
+        fill-opacity: 0.5;
+    }
+
+    100% {
+        fill: var(--link-hover-color);
+        stroke: var(--link-hover-color);
+    }
+}
+
+@keyframes stroke {
+    0% {
+        fill: var(--main-bg-color);
+        stroke: var(--color-rainbow-6);
+        stroke-dashoffset: 25%;
+        stroke-dasharray: 0 50%;
+        stroke-width: 1;
+    }
+
+    20% {
+        fill: var(--main-bg-color);
+        stroke: var(--link-hover-color);
+    }
+
+    40% {
+        fill: var(--main-bg-color);
+        stroke: var(--color-rainbow-4);
+    }
+
+    60% {
+        fill: var(--main-bg-color);
+        stroke: var(--link-hover-color);
+    }
+
+    80% {
+        fill: var(--main-bg-color);
+        stroke: var(--color-rainbow-2);
+    }
+
+    100% {
+        fill: var(--link-hover-color);
+        stroke: var(--link-hover-color);
+        stroke-dashoffset: -25%;
+        stroke-dasharray: 50% 0;
+        stroke-width: 1;
+    }
+}
+
+@keyframes stroke-reverse {
+    0% {
+        fill: var(--main-bg-color);
+        stroke: var(--link-hover-color);
+        stroke-dashoffset: -25%;
+        stroke-dasharray: 50% 0;
+        stroke-width: 1;
+    }
+
+    20% {
+        fill: var(--main-bg-color);
+        stroke: var(--link-hover-color);
+    }
+
+    40% {
+        fill: var(--main-bg-color);
+        stroke: var(--color-rainbow-2);
+    }
+
+    60% {
+        fill: var(--main-bg-color);
+        stroke: var(--link-hover-color);
+    }
+
+    80% {
+        fill: var(--main-bg-color);
+        stroke: var(--link-color);
+    }
+
+    100% {
+        fill: var(--main-bg-color);
+        stroke: var(--link-color);
+        stroke-dashoffset: 25%;
+        stroke-dasharray: 0 50%;
+        stroke-width: 1;
+    }
+}
+
+#list-container {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.list {
+    flex: 1;
+    list-style: none;
+    padding: 0;
+    margin-top: 0;
+
+    #no-items {
+        display: none;
+    }
+}
+
+.list {
+    list-style: none;
+    padding: 0;
+}
+
+.list-item {
+    margin-bottom: 1em;
+    padding: 5px;
+
+    .item-header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .item-name {
+        margin: 0;
+        margin-bottom: 5px;
+        font-size: 1em;
+    }
+
+    .item-date {
+        margin-bottom: 5px;
+        color: var(--secondary-text-color);
+        font-size: 0.8em;
+        min-width: 100px;
+        text-align: right;
+    }
+
+    .item-description {
+        margin: 0;
+        margin-bottom: 5px;
+        font-size: 0.9em;
+    }
+
+    .item-tags {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        font-size: 0.8em;
+    }
+
+    &:hover {
+        background-color: var(--main-bg-color-light);
+    }
+}
+
+#list-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 5px;
+
+    #tags {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 5px;
+
+        label {
+            &:hover {
+                color: var(--link-hover-color)
+            }
+        }
+    }
+
+    #search {
+        margin-top: 10px;
+
+        #search-input {
+            width: 130px;
+        }
+    }
+}

@@ -1,0 +1,16 @@
+pre {
+    padding: 1em;
+    border-radius: 5px;
+}
+
+p code, li code {
+    background-color: #282c34;
+    color: white;
+}
+
+blockquote {
+    background-color: var(--blockquote-bg-color);
+    border-left: 10px solid var(--main-border-color);
+    margin: 1.5em 0;
+    padding: 0.5em 10px;
+}
