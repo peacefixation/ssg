@@ -8,6 +8,11 @@ import (
 	"github.com/peacefixation/static-site-generator/internal/tmpl"
 )
 
+const (
+	indexPageTemplate = "index.html"
+	indexPageOutput   = "index.html"
+)
+
 type indexData struct {
 	Header template.HTML
 	Title  string
@@ -15,9 +20,9 @@ type indexData struct {
 }
 
 func (g Generator) GenerateIndex(posts []model.Post) error {
-	out, err := g.FileCreator.Create(filepath.Join(g.OutputDir, "index.html"))
+	out, err := g.FileCreator.Create(filepath.Join(g.OutputDir, indexPageOutput))
 	if err != nil {
-		return ErrGenerateFile{"index.html", err}
+		return ErrGenerateFile{indexPageOutput, err}
 	}
 	defer out.Close()
 
@@ -27,9 +32,9 @@ func (g Generator) GenerateIndex(posts []model.Post) error {
 		Posts:  posts,
 	}
 
-	err = tmpl.Process("index.html", out, indexData)
+	err = tmpl.Process(filepath.Join(g.TemplateDir, indexPageTemplate), out, indexData)
 	if err != nil {
-		return ErrGenerateFile{"index.html", err}
+		return ErrGenerateFile{indexPageOutput, err}
 	}
 
 	return nil

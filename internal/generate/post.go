@@ -16,10 +16,12 @@ import (
 )
 
 const (
-	contentPostsDir    = "posts"
-	outputPostsDir     = "posts"
-	contentPostFileExt = ".md"
-	outputPostFileExt  = ".html"
+	contentPostsDir      = "posts"
+	outputPostsDir       = "posts"
+	contentPostFileExt   = ".md"
+	outputPostFileExt    = ".html"
+	postPageTemplate     = "post.html"
+	postListItemTemplate = "post-list-item.html"
 )
 
 func (g Generator) GeneratePosts() ([]model.Post, error) {
@@ -97,7 +99,7 @@ func (g Generator) GeneratePost(path string) (model.Post, error) {
 		Content:       template.HTML(htmlContent),
 	}
 
-	post.ListItem, err = generatePostListItem(post)
+	post.ListItem, err = g.generatePostListItem(post)
 	if err != nil {
 		return post, ErrGenerateFile{path, err}
 	}
@@ -108,7 +110,7 @@ func (g Generator) GeneratePost(path string) (model.Post, error) {
 	}
 	defer out.Close()
 
-	err = tmpl.Process("post.html", out, post)
+	err = tmpl.Process(filepath.Join(g.TemplateDir, postPageTemplate), out, post)
 	if err != nil {
 		return post, ErrGenerateFile{path, err}
 	}
@@ -116,10 +118,10 @@ func (g Generator) GeneratePost(path string) (model.Post, error) {
 	return post, nil
 }
 
-func generatePostListItem(post model.Post) (template.HTML, error) {
+func (g Generator) generatePostListItem(post model.Post) (template.HTML, error) {
 	var buf bytes.Buffer
 
-	err := tmpl.Process("post-list-item.html", &buf, post)
+	err := tmpl.Process(filepath.Join(g.TemplateDir, postListItemTemplate), &buf, post)
 	if err != nil {
 		return "", err
 	}

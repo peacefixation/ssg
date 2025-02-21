@@ -1,15 +1,14 @@
 package tmpl
 
 import (
+	"fmt"
 	"html/template"
 	"io"
-	"path/filepath"
 )
 
-const templateDir = "templates"
-
-func Process(templateFile string, w io.Writer, data any) error {
-	tmpl, err := template.ParseFiles(filepath.Join(templateDir, templateFile))
+func Process(templatePath string, w io.Writer, data any) error {
+	fmt.Println("Processing template:", templatePath)
+	tmpl, err := template.ParseFiles(templatePath)
 	if err != nil {
 		return ErrParseTemplate{err}
 	}

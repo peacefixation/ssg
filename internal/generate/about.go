@@ -7,15 +7,20 @@ import (
 	"github.com/peacefixation/static-site-generator/internal/tmpl"
 )
 
+const (
+	aboutPageTemplate = "about.html"
+	aboutPageOutput   = "about.html"
+)
+
 type AboutPageData struct {
 	Header template.HTML
 	Title  string
 }
 
 func (g Generator) GenerateAboutPage() error {
-	out, err := g.FileCreator.Create(filepath.Join(g.OutputDir, "about.html"))
+	out, err := g.FileCreator.Create(filepath.Join(g.OutputDir, aboutPageOutput))
 	if err != nil {
-		return ErrGenerateFile{"links.html", err}
+		return ErrGenerateFile{aboutPageOutput, err}
 	}
 	defer out.Close()
 
@@ -24,9 +29,9 @@ func (g Generator) GenerateAboutPage() error {
 		Title:  g.Title,
 	}
 
-	err = tmpl.Process("about.html", out, linksPageData)
+	err = tmpl.Process(filepath.Join(g.TemplateDir, aboutPageTemplate), out, linksPageData)
 	if err != nil {
-		return ErrGenerateFile{"about.html", err}
+		return ErrGenerateFile{aboutPageOutput, err}
 	}
 
 	return nil

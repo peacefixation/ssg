@@ -9,6 +9,10 @@ import (
 	"github.com/peacefixation/static-site-generator/internal/util"
 )
 
+const (
+	tagPageTemplate = "tag.html"
+)
+
 type tagData struct {
 	Header template.HTML
 	Tag    string
@@ -53,7 +57,7 @@ func (g Generator) generateTagPage(tagDir, tag string, tagPosts []model.Post) er
 	}
 	defer out.Close()
 
-	err = tmpl.Process("tag.html", out, tagData{
+	err = tmpl.Process(filepath.Join(g.TemplateDir, tagPageTemplate), out, tagData{
 		Header: g.HeaderFragment,
 		Tag:    tag,
 		Posts:  tagPosts,

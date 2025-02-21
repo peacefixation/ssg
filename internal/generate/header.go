@@ -3,8 +3,13 @@ package generate
 import (
 	"bytes"
 	"html/template"
+	"path/filepath"
 
 	"github.com/peacefixation/static-site-generator/internal/tmpl"
+)
+
+const (
+	headerFragmentTemplate = "header.html"
 )
 
 type HeaderFragmentData struct {
@@ -22,7 +27,7 @@ func (g *Generator) GenerateHeaderFragment() error {
 	}
 
 	if data.TitleFragmentPath != "" {
-		titleFragment, err := generateTitleFragment(data.TitleFragmentPath, data.Title)
+		titleFragment, err := g.generateTitleFragment(data.TitleFragmentPath, data.Title)
 		if err != nil {
 			return err
 		}
@@ -33,9 +38,9 @@ func (g *Generator) GenerateHeaderFragment() error {
 
 	var buf bytes.Buffer
 
-	err := tmpl.Process("header.html", &buf, data)
+	err := tmpl.Process(filepath.Join(g.TemplateDir, headerFragmentTemplate), &buf, data)
 	if err != nil {
-		return ErrGenerateFragment{"header.html", err}
+		return ErrGenerateFragment{headerFragmentTemplate, err}
 	}
 
 	g.HeaderFragment = template.HTML(buf.String())
@@ -43,10 +48,10 @@ func (g *Generator) GenerateHeaderFragment() error {
 	return nil
 }
 
-func generateTitleFragment(path, title string) (template.HTML, error) {
+func (g *Generator) generateTitleFragment(path, title string) (template.HTML, error) {
 	var buf bytes.Buffer
 
-	err := tmpl.Process(path, &buf, struct{ Title string }{title})
+	err := tmpl.Process(filepath.Join(g.TemplateDir, path), &buf, struct{ Title string }{title})
 	if err != nil {
 		return "", ErrGenerateFragment{path, err}
 	}

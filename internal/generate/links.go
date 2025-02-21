@@ -10,6 +10,13 @@ import (
 	"github.com/peacefixation/static-site-generator/internal/tmpl"
 )
 
+const (
+	linksPageTemplate         = "links.html"
+	linkItemTemplate          = "link-list-item.html"
+	linkItemOpenGraphTemplate = "link-list-item-og.html"
+	linksPageOutput           = "links.html"
+)
+
 type LinksPageData struct {
 	Header template.HTML
 	Links  []model.Link
@@ -19,15 +26,15 @@ type LinksPageData struct {
 func (g Generator) GenerateLinksPage(links []model.Link) error {
 	var err error
 	for i, link := range links {
-		links[i].Fragment, err = processLinkFragment(link)
+		links[i].Fragment, err = g.processLinkFragment(link)
 		if err != nil {
 			return err
 		}
 	}
 
-	out, err := g.FileCreator.Create(filepath.Join(g.OutputDir, "links.html"))
+	out, err := g.FileCreator.Create(filepath.Join(g.OutputDir, linksPageOutput))
 	if err != nil {
-		return ErrGenerateFile{"links.html", err}
+		return ErrGenerateFile{linksPageOutput, err}
 	}
 	defer out.Close()
 
@@ -37,9 +44,9 @@ func (g Generator) GenerateLinksPage(links []model.Link) error {
 		Title:  g.Title,
 	}
 
-	err = tmpl.Process("links.html", out, linksPageData)
+	err = tmpl.Process(filepath.Join(g.TemplateDir, linksPageTemplate), out, linksPageData)
 	if err != nil {
-		return ErrGenerateFile{"links.html", err}
+		return ErrGenerateFile{linksPageOutput, err}
 	}
 
 	return nil
@@ -49,15 +56,15 @@ func hasOpenGraphData(og *opengraph.OpenGraph) bool {
 	return og != nil && og.Title != ""
 }
 
-func processLinkFragment(link model.Link) (template.HTML, error) {
+func (g Generator) processLinkFragment(link model.Link) (template.HTML, error) {
 	var buf bytes.Buffer
-	templateName := "link-list-item.html"
+	templateName := linkItemTemplate
 
 	if link.FetchOpenGraph && hasOpenGraphData(link.OpenGraph) {
-		templateName = "link-list-item-og.html"
+		templateName = linkItemOpenGraphTemplate
 	}
 
-	err := tmpl.Process(templateName, &buf, link)
+	err := tmpl.Process(filepath.Join(g.TemplateDir, templateName), &buf, link)
 	if err != nil {
 		return "", ErrGenerateFragment{templateName, err}
 	}
