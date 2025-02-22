@@ -39,7 +39,6 @@ func TestGenerateAboutPage(t *testing.T) {
 		"",
 		"",
 		"Peace Fixation",
-		"title-svg.html",
 		nil,
 		nil,
 		fileCreator,

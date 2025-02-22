@@ -62,6 +62,11 @@ a {
         margin: 0;
         padding: 0;
 
+        h1 {
+            margin: 0;
+            padding: 0;
+        }
+
         a {
             display: block;
             height: 47px;
@@ -99,109 +104,6 @@ a {
                 }
             }
         }
-    }
-}
-
-#page-header svg text {
-    stroke-width: 1;
-    stroke: var(--main-heading-color);
-    fill: var(--main-heading-color);
-    font-weight: 500;
-    font-size: 32px;
-    line-height: 47px;
-
-    &:hover {
-        animation: fill 0.8s ease infinite alternate;
-    }
-}
-
-@keyframes fill {
-    0% {
-        fill: var(--link-color);
-        stroke: var(--link-color);
-        fill-opacity: 0.5;
-        stroke-opacity: 0.5;
-    }
-
-    100% {
-        fill: var(--link-hover-color);
-        stroke: var(--link-hover-color);
-    }
-}
-
-@keyframes stroke {
-    0% {
-        fill: var(--main-bg-color);
-        stroke: var(--color-rainbow-6);
-        stroke-dashoffset: 25%;
-        stroke-dasharray: 0 50%;
-        stroke-width: 1;
-    }
-
-    20% {
-        fill: var(--main-bg-color);
-        stroke: var(--link-hover-color);
-    }
-
-    40% {
-        fill: var(--main-bg-color);
-        stroke: var(--color-rainbow-4);
-    }
-
-    60% {
-        fill: var(--main-bg-color);
-        stroke: var(--link-hover-color);
-    }
-
-    80% {
-        fill: var(--main-bg-color);
-        stroke: var(--color-rainbow-2);
-    }
-
-    100% {
-        fill: var(--link-hover-color);
-        stroke: var(--link-hover-color);
-        stroke-dashoffset: -25%;
-        stroke-dasharray: 50% 0;
-        stroke-width: 1;
-    }
-}
-
-@keyframes stroke-reverse {
-    0% {
-        fill: var(--main-bg-color);
-        stroke: var(--link-hover-color);
-        stroke-dashoffset: -25%;
-        stroke-dasharray: 50% 0;
-        stroke-width: 1;
-    }
-
-    20% {
-        fill: var(--main-bg-color);
-        stroke: var(--link-hover-color);
-    }
-
-    40% {
-        fill: var(--main-bg-color);
-        stroke: var(--color-rainbow-2);
-    }
-
-    60% {
-        fill: var(--main-bg-color);
-        stroke: var(--link-hover-color);
-    }
-
-    80% {
-        fill: var(--main-bg-color);
-        stroke: var(--link-color);
-    }
-
-    100% {
-        fill: var(--main-bg-color);
-        stroke: var(--link-color);
-        stroke-dashoffset: 25%;
-        stroke-dasharray: 0 50%;
-        stroke-width: 1;
     }
 }
 
