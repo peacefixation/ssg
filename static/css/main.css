@@ -1,18 +1,13 @@
 :root {
-    --main-bg-color: rgb(50, 50, 50);
-    --main-bg-color-light: rgb(60, 60, 60);
-    --main-heading-color: rgb(200, 200, 200);
-    --main-text-color: rgb(200, 200, 200);
-    --main-border-color: rgb(100, 100, 100);
-    --secondary-text-color: rgb(150, 150, 150);
-    --link-color: rgb(0, 185, 170);
-    --link-hover-color: rgb(223, 82, 0);
-    --link-active-color: rgb(0, 200, 200);
-    --nav-link-color: rgb(0, 185, 170);
-    --nav-link-hover-color: rgb(200, 200, 200);
-    --nav-link-bg-hover-color: rgb(223, 82, 0);
-    --nav-link-active-color: rgb(200, 200, 200);
-    --nav-link-bg-active-color: rgb(200, 200, 200);
+    --color-charcoal-dark: rgb(50, 50, 50);
+    --color-charcoal-mid: rgb(60, 60, 60);
+
+    --color-grey-dark: rgb(100, 100, 100);
+    --color-grey-mid: rgb(150, 150, 150);
+    --color-grey-light: rgb(200, 200, 200);
+
+    --color-blue-light: rgb(0, 185, 170);
+    --color-orange: rgb(223, 82, 0);
 
     --color-rainbow-1: rgb(191, 64, 64);
     --color-rainbow-2: rgb(191, 127, 64);
@@ -21,6 +16,21 @@
     --color-rainbow-5: rgb(64, 191, 127);
     --color-rainbow-6: rgb(64, 127, 191);
     --color-rainbow-7: rgb(127, 64, 191);
+
+    --main-bg-color: var(--color-charcoal-dark);
+    --main-bg-color-light: var(--color-charcoal-mid);
+    --main-heading-color: var(--color-grey-mid);
+    --main-text-color: var(--color-grey-light);
+    --main-border-color: var(--color-grey-dark);
+    --secondary-text-color: var(--color-grey-mid);
+    --link-color: var(--color-blue-light);
+    --link-hover-color: var(--color-orange);
+    --link-active-color: var(--color-blue-light);
+    --nav-link-color: var(--color-blue-light);
+    --nav-link-hover-color: var(--color-grey-light);
+    --nav-link-bg-hover-color: var(--color-orange);
+    --nav-link-active-color: var(--color-grey-light);
+    --nav-link-bg-active-color: var(--color-grey-light);
 }
 
 body {
@@ -35,10 +45,12 @@ body {
 }
 
 h1 {
+    color: var(--main-heading-color);
     font-size: 1.5em;
 }
 
 h2 {
+    color: var(--main-heading-color);
     font-size: 1.2em;
 }
 
@@ -192,6 +204,8 @@ a {
         gap: 5px;
 
         label {
+            font-size: 0.8em;
+
             &:hover {
                 color: var(--link-hover-color)
             }
