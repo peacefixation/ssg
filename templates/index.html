@@ -1,0 +1,19 @@
+{{define "index.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>{{template "head.html" .}}</head>
+<body>
+  {{.body}}
+  {{if .RootItems}}
+  <nav class="nav">
+    <ul>
+      {{range .RootItems}}
+      <li><a href="/{{.outputPath}}">{{.title}}</a>{{if .count}} ({{.count}}){{end}}</li>
+      {{end}}
+    </ul>
+  </nav>
+  {{end}}
+  {{template "foot.html" .}}
+</body>
+</html>
+{{end}}

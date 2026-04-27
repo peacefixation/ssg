@@ -1,0 +1,8 @@
+name: SoundCloud Track
+defaults:
+  platform: soundcloud
+fields:
+  - name: url
+    required: true
+  - name: title
+    required: true

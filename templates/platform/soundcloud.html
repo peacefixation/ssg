@@ -1,0 +1,17 @@
+{{define "platform/soundcloud.html"}}
+<div class="embed embed-soundcloud">
+  {{if .url}}
+  <iframe
+    src="https://w.soundcloud.com/player/?url={{.url}}&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false"
+    title="{{.title}}"
+    frameborder="0"
+    scrolling="no"
+    allow="autoplay">
+  </iframe>
+  {{end}}
+  <div class="embed-meta">
+    <span class="title">{{.title}}</span>
+    {{if .artist}}<span class="artist">{{.artist}}</span>{{end}}
+  </div>
+</div>
+{{end}}

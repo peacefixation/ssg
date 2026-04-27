@@ -1,0 +1,10 @@
+{{define "music-item.html"}}
+<div class="music-item">
+  <a href="{{.url}}" target="_blank" rel="noopener noreferrer">
+    {{if .thumbnail}}<img src="{{.thumbnail}}" alt="{{.title}}">{{end}}
+    <span class="title">{{.title}}</span>
+  </a>
+  {{if .artist}}<span class="artist">{{.artist}}</span>{{end}}
+  {{if .platform}}<span class="platform">{{.platform}}</span>{{end}}
+</div>
+{{end}}

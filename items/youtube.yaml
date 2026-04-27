@@ -1,0 +1,8 @@
+name: YouTube Video
+defaults:
+  platform: youtube
+fields:
+  - name: url
+    required: true
+  - name: title
+    required: true

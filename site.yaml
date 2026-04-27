@@ -1,0 +1,20 @@
+title: My Site
+baseURL: http://localhost:8080
+contentDir: content
+outputDir: public
+templateDir: templates
+themesDir: themes
+theme: default
+
+server:
+  host: localhost
+  port: 8080
+
+defaults:
+  page:
+    template: page.html
+  list:
+    template: list.html
+    cardTemplate: item.html
+    sortBy: date
+    sortOrder: desc

@@ -1,0 +1,13 @@
+{{define "list.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>{{template "head.html" .}}</head>
+<body>
+  <h1>{{.title}}</h1>
+  <div class="list">
+    {{range .List}}{{.}}{{end}}
+  </div>
+  {{template "foot.html" .}}
+</body>
+</html>
+{{end}}
