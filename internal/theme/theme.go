@@ -16,13 +16,17 @@ type Config struct {
 	Description string   `yaml:"description"`
 	CSS         []string `yaml:"css"`
 	JS          []string `yaml:"js"`
+	CDNCSS      []string `yaml:"cdnCSS"`
+	CDNJS       []string `yaml:"cdnJS"`
 }
 
 // Data is injected into every template under the key "Theme".
 type Data struct {
-	Name string
-	CSS  []string // root-relative output paths, e.g. ["/theme/style.css"]
-	JS   []string // root-relative output paths, e.g. ["/theme/main.js"]
+	Name   string
+	CSS    []string // root-relative output paths, e.g. ["/theme/style.css"]
+	JS     []string // root-relative output paths, e.g. ["/theme/main.js"]
+	CDNCSS []string // external CDN stylesheet URLs
+	CDNJS  []string // external CDN script URLs
 }
 
 // Load reads theme.yaml from themeDir and returns the parsed Config.
@@ -55,7 +59,7 @@ func BuildData(cfg *Config) Data {
 	for i, f := range cfg.JS {
 		js[i] = "/theme/" + f
 	}
-	return Data{Name: cfg.Name, CSS: css, JS: js}
+	return Data{Name: cfg.Name, CSS: css, JS: js, CDNCSS: cfg.CDNCSS, CDNJS: cfg.CDNJS}
 }
 
 // CopyAssets copies all theme files (excluding the templates/ subdirectory)

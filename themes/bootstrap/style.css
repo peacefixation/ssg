@@ -1,0 +1,249 @@
+/* === Bootstrap theme for ssg ===
+   Maps ssg custom properties to Bootstrap 5 tokens, then applies full
+   component-level styling to ssg's markup conventions. */
+
+:root {
+  --bg:           var(--bs-body-bg);
+  --text:         var(--bs-body-color);
+  --muted:        var(--bs-secondary-color);
+  --accent:       var(--bs-link-color);
+  --accent-hover: var(--bs-link-hover-color);
+  --border:       var(--bs-border-color);
+  --surface:      var(--bs-tertiary-bg);
+  --radius:       var(--bs-border-radius);
+  --max-width:    820px;
+  --pad-x:        1.5rem;
+}
+
+/* === Page background === */
+body {
+  background-color: var(--bs-body-bg);
+}
+
+/* === Layout — centre all direct body children; header spans full width === */
+body > *:not(header) {
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: var(--pad-x);
+}
+
+/* === Header — dark navbar with a gradient accent bar on top === */
+header {
+  background: #1e293b !important;
+  border-bottom: none !important;
+  border-top: 3px solid;
+  border-image: linear-gradient(90deg, #0d6efd, #6610f2, #0dcaf0) 1;
+  margin-bottom: 2.5rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+header > * {
+  max-width: var(--max-width);
+  margin-inline: auto;
+  padding-inline: var(--pad-x);
+}
+
+/* Site title */
+header h1 {
+  color: #f8fafc !important;
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+  padding-block: 1.125rem 0.75rem;
+}
+
+/* === Root nav === */
+header > nav:not(.breadcrumbs) {
+  gap: 0 !important;
+  margin-bottom: 0 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+header > nav:not(.breadcrumbs) a {
+  color: rgba(255, 255, 255, 0.65) !important;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.5rem 0.875rem !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  display: inline-block;
+}
+
+header > nav:not(.breadcrumbs) a:hover {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.06);
+  border-bottom-color: #0d6efd !important;
+  text-decoration: none;
+}
+
+/* === Breadcrumbs === */
+nav.breadcrumbs {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4) !important;
+  padding-block: 0.5rem 0.625rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+nav.breadcrumbs a {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+nav.breadcrumbs a:hover {
+  color: rgba(255, 255, 255, 0.9) !important;
+  text-decoration: none !important;
+}
+
+nav.breadcrumbs span {
+  color: rgba(255, 255, 255, 0.85) !important;
+  font-weight: 500;
+}
+
+/* === Page headings === */
+h1 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 0;
+}
+
+/* === List layout === */
+.list {
+  padding-block: 0 2.5rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+/* === Item cards — Bootstrap card treatment === */
+.item {
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color) !important;
+  border-left: 3px solid transparent !important;
+  border-radius: var(--bs-border-radius-lg) !important;
+  padding: 1.125rem 1.25rem !important;
+  box-shadow: var(--bs-box-shadow-sm);
+  transition: box-shadow 0.15s ease, border-color 0.15s, background 0.15s;
+}
+
+.item:hover {
+  border-color: var(--bs-border-color) !important;
+  border-left-color: #0d6efd !important;
+  box-shadow: 0 0.375rem 1rem rgba(13, 110, 253, 0.1) !important;
+  background: rgba(13, 110, 253, 0.02) !important;
+}
+
+.item a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.item .title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--bs-emphasis-color);
+}
+
+.item:hover .title {
+  color: #0d6efd;
+}
+
+.item .tags {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #0d6efd;
+  background: rgba(13, 110, 253, 0.08);
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  margin-top: 0.25rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.item .artist {
+  font-size: 0.875rem;
+  color: var(--bs-secondary-color);
+  margin-top: 0.125rem;
+}
+
+/* === Embeds === */
+.embed {
+  border-radius: var(--bs-border-radius-lg);
+  overflow: hidden;
+  background: var(--bs-tertiary-bg);
+  box-shadow: var(--bs-box-shadow);
+  margin-block: 0 1.5rem;
+}
+
+.embed iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: none;
+  display: block;
+}
+
+.embed-soundcloud iframe {
+  aspect-ratio: unset;
+  height: 166px;
+}
+
+.embed-meta {
+  padding: 0.75rem 1rem;
+}
+
+.embed-meta a {
+  text-decoration: none;
+  color: var(--bs-emphasis-color);
+  font-weight: 600;
+}
+
+.embed-meta a:hover {
+  color: #0d6efd;
+}
+
+.embed-meta .artist {
+  font-size: 0.875rem;
+  color: var(--bs-secondary-color);
+  margin-top: 0.125rem;
+}
+
+/* === Prose === */
+p { margin-bottom: 1rem; }
+
+blockquote {
+  border-left: 3px solid #0d6efd;
+  padding: 0.75rem 1.25rem;
+  background: rgba(13, 110, 253, 0.04);
+  border-radius: 0 var(--bs-border-radius) var(--bs-border-radius) 0;
+  color: var(--bs-secondary-color);
+  margin-inline: 0;
+  margin-bottom: 1rem;
+}
+
+code {
+  font-size: 0.875em;
+  background: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color);
+  padding: 0.15em 0.4em;
+  border-radius: var(--bs-border-radius-sm);
+}
+
+pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  border: none;
+  padding: 1.25rem;
+  border-radius: var(--bs-border-radius-lg);
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  box-shadow: var(--bs-box-shadow);
+  margin-bottom: 1rem;
+}
+
+pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+}
