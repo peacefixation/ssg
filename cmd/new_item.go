@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -60,11 +61,15 @@ func interactiveNewItem() error {
 		return fmt.Errorf("no lists found in %s", cfg.ContentDir)
 	}
 
-	listIdx, err := promptSelect("Select a list:", lists)
+	displayNames := make([]string, len(lists))
+	for i, l := range lists {
+		displayNames[i] = l.title
+	}
+	listIdx, err := promptSelect("Select a list:", displayNames)
 	if err != nil {
 		return err
 	}
-	listName := lists[listIdx]
+	listName := lists[listIdx].path
 
 	listMeta := readListDirMeta(filepath.Join(cfg.ContentDir, listName, "list.yaml"))
 
@@ -170,19 +175,64 @@ func writeMarkdownItem(dir, typeName string, data map[string]string) error {
 	return nil
 }
 
-func scanLists(contentDir string) ([]string, error) {
-	entries, err := os.ReadDir(contentDir)
-	if err != nil {
-		return nil, fmt.Errorf("reading content dir: %w", err)
-	}
-	var lists []string
-	for _, entry := range entries {
-		if !entry.IsDir() {
-			continue
+var scanListExts = map[string]bool{
+	".md": true, ".markdown": true, ".json": true, ".yaml": true, ".yml": true,
+}
+
+// scanLists returns all lists reachable from contentDir: directory lists (any depth)
+// and sub-lists declared via a "lists" property in file items.
+func scanLists(contentDir string) ([]listEntry, error) {
+	var entries []listEntry
+	err := filepath.WalkDir(contentDir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
 		}
-		if _, err := os.Stat(filepath.Join(contentDir, entry.Name(), "list.yaml")); err == nil {
-			lists = append(lists, entry.Name())
+		if d.IsDir() {
+			listFile := filepath.Join(path, "list.yaml")
+			if _, statErr := os.Stat(listFile); statErr == nil {
+				rel, _ := filepath.Rel(contentDir, path)
+				if rel != "." {
+					title := readListDirMeta(listFile).title
+					if title == "" {
+						title = rel
+					}
+					entries = append(entries, listEntry{path: rel, title: title})
+				}
+			}
+			return nil
 		}
-	}
-	return lists, nil
+		if filepath.Base(path) == "list.yaml" || !scanListExts[strings.ToLower(filepath.Ext(path))] {
+			return nil
+		}
+		meta := readFileItemMeta(path)
+		if len(meta.Lists) == 0 {
+			return nil
+		}
+		rel, _ := filepath.Rel(contentDir, path)
+		stem := stemFromPath(path)
+		parentDir := filepath.Dir(rel)
+		if parentDir == "." {
+			parentDir = ""
+		}
+		for _, listName := range meta.Lists {
+			subListFile := filepath.Join(filepath.Dir(path), stem, listName, "list.yaml")
+			if _, statErr := os.Stat(subListFile); statErr != nil {
+				continue
+			}
+			subTitle := readListDirMeta(subListFile).title
+			if subTitle == "" {
+				subTitle = listName
+			}
+			displayTitle := subTitle
+			if meta.Title != "" {
+				displayTitle = meta.Title + " › " + subTitle
+			}
+			entries = append(entries, listEntry{
+				path:  filepath.Join(parentDir, stem, listName),
+				title: displayTitle,
+			})
+		}
+		return nil
+	})
+	return entries, err
 }

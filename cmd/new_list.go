@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -82,16 +83,48 @@ func interactiveNewList() error {
 		return fmt.Errorf("loading config: %w", err)
 	}
 
+	lists, err := scanLists(cfg.ContentDir)
+	if err != nil {
+		return err
+	}
+	fileItems, err := scanFileItemParents(cfg.ContentDir)
+	if err != nil {
+		return err
+	}
+
+	// Combine all parent options: top level, existing lists, then file items.
+	allParents := make([]listEntry, 0, len(lists)+len(fileItems))
+	allParents = append(allParents, lists...)
+	allParents = append(allParents, fileItems...)
+
+	parentOptions := make([]string, 0, len(allParents)+1)
+	parentOptions = append(parentOptions, "Top level")
+	for _, p := range allParents {
+		parentOptions = append(parentOptions, p.title)
+	}
+
+	parentIdx, err := promptSelect("Where should the new list live?", parentOptions)
+	if err != nil {
+		return err
+	}
+
 	var name string
 	for {
-		name, err = promptInput("List path (relative to content dir)", "")
+		name, err = promptInput("List name", "")
 		if err != nil {
 			return err
 		}
 		if strings.TrimSpace(name) != "" {
 			break
 		}
-		fmt.Println("Path is required")
+		fmt.Println("Name is required")
+	}
+
+	var fullPath string
+	if parentIdx == 0 {
+		fullPath = name
+	} else {
+		fullPath = allParents[parentIdx-1].path + "/" + name
 	}
 
 	var title string
@@ -119,7 +152,7 @@ func interactiveNewList() error {
 		}
 	}
 
-	return createList(cfg, name, lc)
+	return createList(cfg, fullPath, lc)
 }
 
 func createList(cfg *config.SiteConfig, name string, lc newListConfig) error {
@@ -130,8 +163,21 @@ func createList(cfg *config.SiteConfig, name string, lc newListConfig) error {
 	}
 
 	parentDir := filepath.Dir(destDir)
-	if _, err := os.Stat(parentDir); os.IsNotExist(err) {
-		return fmt.Errorf("parent directory %s does not exist", parentDir)
+	listName := filepath.Base(destDir)
+
+	// If the parent directory does not contain a list.yaml it is not a standard
+	// list directory. Check whether it is a file item's sibling container instead.
+	if _, err := os.Stat(filepath.Join(parentDir, "list.yaml")); os.IsNotExist(err) {
+		grandparentDir := filepath.Dir(parentDir)
+		stem := filepath.Base(parentDir)
+		itemPath, found := findFileItemByStem(grandparentDir, stem)
+		if !found {
+			if _, statErr := os.Stat(parentDir); os.IsNotExist(statErr) {
+				return fmt.Errorf("parent directory %s does not exist", parentDir)
+			}
+			return fmt.Errorf("parent %q is not a list and no matching file item found", parentDir)
+		}
+		return createFileItemSubList(destDir, parentDir, listName, itemPath, lc)
 	}
 
 	if err := os.Mkdir(destDir, 0755); err != nil {
@@ -152,6 +198,30 @@ func createList(cfg *config.SiteConfig, name string, lc newListConfig) error {
 	return nil
 }
 
+func createFileItemSubList(destDir, siblingDir, listName, itemPath string, lc newListConfig) error {
+	// Create the sibling container directory if this is the first sub-list.
+	if err := os.MkdirAll(siblingDir, 0755); err != nil {
+		return fmt.Errorf("creating sibling directory: %w", err)
+	}
+	if err := os.Mkdir(destDir, 0755); err != nil {
+		return fmt.Errorf("creating sub-list directory: %w", err)
+	}
+	out, err := yaml.Marshal(lc)
+	if err != nil {
+		return fmt.Errorf("marshalling list config: %w", err)
+	}
+	listFile := filepath.Join(destDir, "list.yaml")
+	if err := os.WriteFile(listFile, out, 0644); err != nil {
+		return fmt.Errorf("writing list.yaml: %w", err)
+	}
+	fmt.Printf("Created %s\n", listFile)
+	if err := appendListToFile(itemPath, listName); err != nil {
+		return fmt.Errorf("updating %s: %w", itemPath, err)
+	}
+	fmt.Printf("Updated %s\n", itemPath)
+	return nil
+}
+
 type newListConfig struct {
 	Title        string   `yaml:"title"`
 	Types        []string `yaml:"types,omitempty"`
@@ -160,6 +230,212 @@ type newListConfig struct {
 	SortBy       string   `yaml:"sortBy,omitempty"`
 	SortOrder    string   `yaml:"sortOrder,omitempty"`
 	Limit        int      `yaml:"limit,omitempty"`
+}
+
+// --- list discovery ---
+
+// listEntry describes a list reachable via the CLI.
+type listEntry struct {
+	path  string // content-relative path, e.g. "music" or "music/20260418-lsg/live"
+	title string // display title shown in interactive prompts
+}
+
+// fileItemMeta holds the fields from a content file that are relevant to list discovery.
+type fileItemMeta struct {
+	Title string   `yaml:"title" json:"title"`
+	Lists []string `yaml:"lists" json:"lists"`
+}
+
+// readFileItemMeta reads title and lists from a content file (YAML, JSON, or Markdown).
+func readFileItemMeta(path string) fileItemMeta {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return fileItemMeta{}
+	}
+	var m fileItemMeta
+	switch strings.ToLower(filepath.Ext(path)) {
+	case ".json":
+		_ = json.Unmarshal(data, &m)
+	case ".md", ".markdown":
+		if fm := extractFrontmatter(data); fm != nil {
+			_ = yaml.Unmarshal(fm, &m)
+		}
+	default:
+		_ = yaml.Unmarshal(data, &m)
+	}
+	return m
+}
+
+// extractFrontmatter returns the YAML block between leading --- delimiters, or nil.
+func extractFrontmatter(data []byte) []byte {
+	s := string(data)
+	if !strings.HasPrefix(s, "---") {
+		return nil
+	}
+	rest := s[3:]
+	idx := strings.Index(rest, "\n---")
+	if idx < 0 {
+		return nil
+	}
+	return []byte(rest[:idx])
+}
+
+// stemFromPath returns the filename stem of path (base name without extension).
+func stemFromPath(path string) string {
+	base := filepath.Base(path)
+	return strings.TrimSuffix(base, filepath.Ext(base))
+}
+
+// findFileItemByStem looks in dir for a content file whose stem equals stem.
+// Returns the full path and true if found.
+func findFileItemByStem(dir, stem string) (string, bool) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return "", false
+	}
+	for _, entry := range entries {
+		if entry.IsDir() || entry.Name() == "list.yaml" {
+			continue
+		}
+		if stemFromPath(entry.Name()) == stem && scanListExts[strings.ToLower(filepath.Ext(entry.Name()))] {
+			return filepath.Join(dir, entry.Name()), true
+		}
+	}
+	return "", false
+}
+
+// appendListToFile appends listName to the "lists" field of a content file in-place.
+func appendListToFile(path, listName string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("reading %s: %w", path, err)
+	}
+	switch strings.ToLower(filepath.Ext(path)) {
+	case ".json":
+		return appendListJSON(path, data, listName)
+	case ".md", ".markdown":
+		return appendListMarkdown(path, data, listName)
+	default:
+		return appendListYAML(path, data, listName)
+	}
+}
+
+func appendListYAML(path string, data []byte, listName string) error {
+	var m map[string]any
+	if err := yaml.Unmarshal(data, &m); err != nil {
+		return fmt.Errorf("parsing %s: %w", path, err)
+	}
+	if m == nil {
+		m = make(map[string]any)
+	}
+	m["lists"] = append(toStringSlice(m["lists"]), listName)
+	out, err := yaml.Marshal(m)
+	if err != nil {
+		return fmt.Errorf("marshalling %s: %w", path, err)
+	}
+	return os.WriteFile(path, out, 0644)
+}
+
+func appendListJSON(path string, data []byte, listName string) error {
+	var m map[string]any
+	if err := json.Unmarshal(data, &m); err != nil {
+		return fmt.Errorf("parsing %s: %w", path, err)
+	}
+	m["lists"] = append(toStringSlice(m["lists"]), listName)
+	out, err := json.MarshalIndent(m, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshalling %s: %w", path, err)
+	}
+	return os.WriteFile(path, append(out, '\n'), 0644)
+}
+
+func appendListMarkdown(path string, data []byte, listName string) error {
+	fm := extractFrontmatter(data)
+	s := string(data)
+	if fm == nil {
+		// No frontmatter — prepend a new block.
+		newFM, err := yaml.Marshal(map[string]any{"lists": []string{listName}})
+		if err != nil {
+			return err
+		}
+		return os.WriteFile(path, []byte("---\n"+string(newFM)+"---\n\n"+s), 0644)
+	}
+	var fmMap map[string]any
+	if err := yaml.Unmarshal(fm, &fmMap); err != nil {
+		return fmt.Errorf("parsing frontmatter in %s: %w", path, err)
+	}
+	if fmMap == nil {
+		fmMap = make(map[string]any)
+	}
+	fmMap["lists"] = append(toStringSlice(fmMap["lists"]), listName)
+	newFM, err := yaml.Marshal(fmMap)
+	if err != nil {
+		return fmt.Errorf("marshalling frontmatter: %w", err)
+	}
+	// Reconstruct: "---\n{fm}---{rest-after-closing-delimiter}"
+	rest := s[3:] // skip opening ---
+	idx := strings.Index(rest, "\n---")
+	afterFM := rest[idx+4:] // everything after the closing ---
+	return os.WriteFile(path, []byte("---\n"+string(newFM)+"---"+afterFM), 0644)
+}
+
+// toStringSlice coerces the value stored under "lists" in a parsed map to []string.
+func toStringSlice(v any) []string {
+	switch val := v.(type) {
+	case []string:
+		return val
+	case []any:
+		out := make([]string, 0, len(val))
+		for _, item := range val {
+			if s, ok := item.(string); ok {
+				out = append(out, s)
+			}
+		}
+		return out
+	}
+	return nil
+}
+
+// scanFileItemParents returns file items inside list directories that can receive
+// new sub-lists. The entry path is the sibling container path (dir/stem), which
+// is passed as the parent when calling createList.
+func scanFileItemParents(contentDir string) ([]listEntry, error) {
+	var entries []listEntry
+	err := filepath.WalkDir(contentDir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return err
+		}
+		name := filepath.Base(path)
+		if name == "list.yaml" || !scanListExts[strings.ToLower(filepath.Ext(path))] {
+			return nil
+		}
+		// Only include files that live directly inside a list directory.
+		parentDir := filepath.Dir(path)
+		if _, statErr := os.Stat(filepath.Join(parentDir, "list.yaml")); statErr != nil {
+			return nil
+		}
+		meta := readFileItemMeta(path)
+		stem := stemFromPath(path)
+		rel, _ := filepath.Rel(contentDir, parentDir)
+
+		var siblingPath string
+		if rel == "." {
+			siblingPath = stem
+		} else {
+			siblingPath = rel + "/" + stem
+		}
+
+		displayTitle := meta.Title
+		if displayTitle == "" {
+			displayTitle = stem
+		}
+		if rel != "." {
+			displayTitle += " [" + rel + "]"
+		}
+		entries = append(entries, listEntry{path: siblingPath, title: displayTitle})
+		return nil
+	})
+	return entries, err
 }
 
 // --- shared helpers (moved from add.go) ---

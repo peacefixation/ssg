@@ -254,6 +254,28 @@ func buildItem(
 		item.Config.Template = tmpl
 	}
 
+	// If the item declares sub-lists, scan each sibling directory and append the
+	// resulting ItemConfigs to Children before buildChildren is called.
+	if rawLists, ok := item.Data["lists"].([]any); ok {
+		stem := stemOf(itemCfg.DataSource.Path)
+		siblingDir := filepath.Join(filepath.Dir(itemCfg.DataSource.Path), stem)
+		outputPrefix := strings.TrimSuffix(itemCfg.OutputPath, "index.html")
+		for _, raw := range rawLists {
+			name, _ := raw.(string)
+			if name == "" {
+				continue
+			}
+			sub, ok, err := scanDirItem(siblingDir, name, outputPrefix, cfg)
+			if err != nil {
+				return 0, fmt.Errorf("scanning sub-list %q of %q: %w", name, itemCfg.Name, err)
+			}
+			if ok {
+				itemCfg.Children = append(itemCfg.Children, sub)
+			}
+		}
+		delete(item.Data, "lists")
+	}
+
 	// Build the ancestors slice for children: ancestors + this item.
 	title, _ := item.Data["title"].(string)
 	childAncestors := make([]map[string]any, len(ancestors)+1)
@@ -435,6 +457,12 @@ func applyTypeDefaults(data map[string]any, defaults map[string]any) {
 // 	}
 // 	return result
 // }
+
+// stemOf returns the filename stem of path (base name without extension).
+func stemOf(path string) string {
+	base := filepath.Base(path)
+	return strings.TrimSuffix(base, filepath.Ext(base))
+}
 
 // first returns the first non-empty string from the arguments.
 func first(vals ...string) string {
