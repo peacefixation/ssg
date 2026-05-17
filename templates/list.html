@@ -3,7 +3,7 @@
 <html lang="en">
 <head>{{template "head.html" .}}</head>
 <body>
-  <h1>{{.title}}</h1>
+  {{template "nav.html" .}}
   <div class="list">
     {{range .List}}{{.}}{{end}}
   </div>

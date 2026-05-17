@@ -3,6 +3,7 @@
 <html lang="en">
 <head>{{template "head.html" .}}</head>
 <body>
+  {{template "nav.html" .}}
   {{if .embed}}
     {{render (printf "embed/%s.html" .embed) .}}
   {{else}}

@@ -66,11 +66,18 @@ func Build(cfg *config.SiteConfig, registry *datasource.Registry, clean bool) (i
 	}
 
 	// Pre-fetch nav data for all root items so every page can render global nav.
-	rootNavItems := buildNavItems(rootItems, registry)
+	// The home page (index.html) is excluded — the site title serves as the home link.
+	allNavItems := buildNavItems(rootItems, registry)
+	rootNavItems := make([]map[string]any, 0, len(allNavItems))
+	for _, item := range allNavItems {
+		if item["outputPath"] != "index.html" {
+			rootNavItems = append(rootNavItems, item)
+		}
+	}
 
 	count := 0
 	for _, itemCfg := range rootItems {
-		n, err := buildItem(cfg, itemCfg, registry, r, rootNavItems, themeData)
+		n, err := buildItem(cfg, itemCfg, registry, r, rootNavItems, themeData, []map[string]any{})
 		if err != nil {
 			return count, fmt.Errorf("building item %q: %w", itemCfg.Name, err)
 		}
@@ -224,6 +231,7 @@ func buildItem(
 	r *renderer.Renderer,
 	rootNavItems []map[string]any,
 	themeData theme.Data,
+	ancestors []map[string]any,
 ) (int, error) {
 	ds, err := registry.New(itemCfg.DataSource)
 	if err != nil {
@@ -246,8 +254,14 @@ func buildItem(
 		item.Config.Template = tmpl
 	}
 
+	// Build the ancestors slice for children: ancestors + this item.
+	title, _ := item.Data["title"].(string)
+	childAncestors := make([]map[string]any, len(ancestors)+1)
+	copy(childAncestors, ancestors)
+	childAncestors[len(ancestors)] = map[string]any{"title": title, "outputPath": item.OutputPath}
+
 	// Recursively build child pages and collect their card fragments.
-	fragments, childCount, err := buildChildren(cfg, itemCfg, registry, r, rootNavItems, themeData)
+	fragments, childCount, err := buildChildren(cfg, itemCfg, registry, r, rootNavItems, themeData, childAncestors)
 	if err != nil {
 		return 0, err
 	}
@@ -257,6 +271,8 @@ func buildItem(
 	item.Data["RootItems"] = rootNavItems
 	item.Data["List"] = fragments
 	item.Data["Theme"] = themeData
+	item.Data["BreadcrumbLinks"] = ancestors
+	item.Data["BreadcrumbCurrent"] = title
 
 	if err := writeItem(cfg.OutputDir, item, r); err != nil {
 		return 0, err
@@ -281,6 +297,7 @@ func buildChildren(
 	r *renderer.Renderer,
 	rootNavItems []map[string]any,
 	themeData theme.Data,
+	ancestors []map[string]any,
 ) ([]template.HTML, int, error) {
 	if len(itemCfg.Children) == 0 {
 		return nil, 0, nil
@@ -289,7 +306,7 @@ func buildChildren(
 	// Build every child page first (regardless of limit, so all pages exist).
 	totalCount := 0
 	for _, childCfg := range itemCfg.Children {
-		n, err := buildItem(cfg, childCfg, registry, r, rootNavItems, themeData)
+		n, err := buildItem(cfg, childCfg, registry, r, rootNavItems, themeData, ancestors)
 		if err != nil {
 			return nil, 0, fmt.Errorf("building child %q: %w", childCfg.Name, err)
 		}

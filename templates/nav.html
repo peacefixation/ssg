@@ -1,0 +1,19 @@
+{{define "nav.html"}}
+<header>
+  <h1>{{.Site.Title}}</h1>
+  <nav>
+    {{range .RootItems}}
+    <a href="/{{.outputPath}}">{{.title}}</a>
+    {{end}}
+  </nav>
+  <nav class="breadcrumbs">
+    {{if eq .OutputPath "index.html"}}
+    <a href="/">Home</a>
+    {{else}}
+    <a href="/">Home</a>
+    {{range .BreadcrumbLinks}} &gt; <a href="/{{.outputPath}}">{{.title}}</a>{{end}}
+    &gt; <span>{{.BreadcrumbCurrent}}</span>
+    {{end}}
+  </nav>
+</header>
+{{end}}
