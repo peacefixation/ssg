@@ -1,0 +1,8 @@
+name: Post
+format: markdown
+defaults:
+fields:
+  - name: title
+    required: true
+  - name: tags
+    required: true

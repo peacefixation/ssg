@@ -1,72 +1,74 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
 
+var stdinReader = bufio.NewReader(os.Stdin)
+
 var newCmd = &cobra.Command{
-	Use:   "new <name>",
-	Short: "Scaffold a new site skeleton in the current directory",
-	Args:  cobra.ExactArgs(1),
-	RunE:  runNew,
+	Use:   "new",
+	Short: "Create a new item or list",
+	RunE:  runNewInteractive,
 }
 
-func runNew(cmd *cobra.Command, args []string) error {
-	name := args[0]
+func init() {
+	rootCmd.AddCommand(newCmd)
+}
 
-	dirs := []string{"templates", "content", "public"}
-	for _, dir := range dirs {
-		if err := os.MkdirAll(dir, 0755); err != nil {
-			return fmt.Errorf("creating directory %s: %w", dir, err)
+func runNewInteractive(cmd *cobra.Command, args []string) error {
+	choices := []string{"item", "list"}
+	idx, err := promptSelect("What would you like to create?", choices)
+	if err != nil {
+		return err
+	}
+	switch choices[idx] {
+	case "item":
+		return interactiveNewItem()
+	case "list":
+		return interactiveNewList()
+	}
+	return nil
+}
+
+func promptSelect(label string, options []string) (int, error) {
+	fmt.Println(label)
+	for i, opt := range options {
+		fmt.Printf("%d) %s\n", i+1, opt)
+	}
+	for {
+		fmt.Print("> ")
+		line, err := stdinReader.ReadString('\n')
+		if err != nil {
+			return 0, fmt.Errorf("reading input: %w", err)
 		}
+		n, err := strconv.Atoi(strings.TrimSpace(line))
+		if err == nil && n >= 1 && n <= len(options) {
+			return n - 1, nil
+		}
+		fmt.Printf("Enter a number between 1 and %d\n", len(options))
 	}
-
-	siteYAML := fmt.Sprintf(`title: %s
-baseURL: http://localhost:8080
-outputDir: public
-templateDir: templates
-contentDir: content
-`, name)
-	if err := writeFile("site.yaml", siteYAML); err != nil {
-		return err
-	}
-
-	indexTemplate := `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>{{ .title }} — {{ .Site.Title }}</title>
-</head>
-<body>
-  <h1>{{ .title }}</h1>
-  {{ .body }}
-</body>
-</html>
-`
-	if err := writeFile("templates/index.html", indexTemplate); err != nil {
-		return err
-	}
-
-	indexContent := `---
-title: Welcome
----
-Hello, world! This is your new SSG site.
-`
-	if err := writeFile("content/index.md", indexContent); err != nil {
-		return err
-	}
-
-	fmt.Printf("Created new site: %s\n", name)
-	fmt.Println("  ssg build")
-	return nil
 }
 
-func writeFile(path, content string) error {
-	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
-		return fmt.Errorf("writing %s: %w", path, err)
+func promptInput(label, defaultVal string) (string, error) {
+	if defaultVal != "" {
+		fmt.Printf("%s [%s]: ", label, defaultVal)
+	} else {
+		fmt.Printf("%s: ", label)
 	}
-	return nil
+	line, err := stdinReader.ReadString('\n')
+	if err != nil {
+		return "", fmt.Errorf("reading input: %w", err)
+	}
+	v := strings.TrimSpace(line)
+	if v == "" {
+		return defaultVal, nil
+	}
+	return v, nil
 }

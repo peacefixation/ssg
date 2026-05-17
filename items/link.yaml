@@ -1,0 +1,7 @@
+name: Link
+defaults:
+fields:
+  - name: url
+    required: true
+  - name: title
+    required: true

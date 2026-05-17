@@ -254,7 +254,7 @@ func buildItem(
 
 	item.Data["Site"] = cfg
 	item.Data["OutputPath"] = item.OutputPath
-	item.Data["RootItems"] = excludeSelf(rootNavItems, item.OutputPath)
+	item.Data["RootItems"] = rootNavItems
 	item.Data["List"] = fragments
 	item.Data["Theme"] = themeData
 
@@ -409,15 +409,15 @@ func applyTypeDefaults(data map[string]any, defaults map[string]any) {
 }
 
 // excludeSelf returns rootNavItems without the entry whose outputPath matches currentPath.
-func excludeSelf(items []map[string]any, currentPath string) []map[string]any {
-	result := make([]map[string]any, 0, len(items))
-	for _, item := range items {
-		if item["outputPath"] != currentPath {
-			result = append(result, item)
-		}
-	}
-	return result
-}
+// func excludeSelf(items []map[string]any, currentPath string) []map[string]any {
+// 	result := make([]map[string]any, 0, len(items))
+// 	for _, item := range items {
+// 		if item["outputPath"] != currentPath {
+// 			result = append(result, item)
+// 		}
+// 	}
+// 	return result
+// }
 
 // first returns the first non-empty string from the arguments.
 func first(vals ...string) string {
