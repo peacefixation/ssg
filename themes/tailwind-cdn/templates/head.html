@@ -1,0 +1,172 @@
+{{define "head.html"}}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{.Site.Title}}{{if .title}} - {{.title}}{{end}}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style type="text/tailwindcss">
+    @layer base {
+      body {
+        @apply bg-gray-50 text-gray-900;
+      }
+    }
+
+    @layer components {
+      /* Layout — centre all direct body children; header spans full width */
+      body > *:not(header) {
+        @apply max-w-3xl mx-auto px-6;
+      }
+
+      /* Header */
+      header {
+        @apply bg-slate-900 shadow-lg mb-10;
+        border-top: 3px solid;
+        border-image: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4) 1;
+      }
+
+      header > * {
+        @apply max-w-3xl mx-auto px-6;
+      }
+
+      header h1 {
+        @apply text-white text-xl font-bold tracking-tight m-0;
+        padding-block: 1.125rem 0.75rem;
+      }
+
+      /* Root nav */
+      header > nav:not(.breadcrumbs) {
+        @apply border-b border-white/10;
+      }
+
+      header > nav:not(.breadcrumbs) a {
+        @apply text-slate-400 text-sm font-medium inline-block no-underline transition-colors duration-150;
+        padding: 0.5rem 0.875rem;
+        border-bottom: 2px solid transparent;
+      }
+
+      header > nav:not(.breadcrumbs) a:hover {
+        @apply text-white no-underline;
+        background: rgba(255, 255, 255, 0.06);
+        border-bottom-color: #3b82f6;
+      }
+
+      /* Breadcrumbs */
+      nav.breadcrumbs {
+        @apply text-xs py-2 border-t border-white/5;
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      nav.breadcrumbs a {
+        @apply no-underline;
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      nav.breadcrumbs a:hover {
+        @apply no-underline;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      nav.breadcrumbs span {
+        @apply font-medium;
+        color: rgba(255, 255, 255, 0.85);
+      }
+
+      /* Headings */
+      h1 {
+        @apply font-bold tracking-tight mt-0;
+      }
+
+      /* List */
+      .list {
+        @apply pb-10 grid gap-3;
+      }
+
+      /* Item cards */
+      .item {
+        @apply bg-white rounded-lg p-5 shadow-sm transition-all duration-150;
+        border: 1px solid theme('colors.gray.200');
+        border-left: 3px solid transparent;
+      }
+
+      .item:hover {
+        border-left-color: theme('colors.blue.500');
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.1);
+        background: rgba(59, 130, 246, 0.02);
+      }
+
+      .item a {
+        @apply no-underline text-inherit;
+      }
+
+      .item .title {
+        @apply font-semibold text-gray-900;
+      }
+
+      .item:hover .title {
+        @apply text-blue-600;
+      }
+
+      .item .tags {
+        @apply inline-block text-xs font-medium text-blue-600 bg-blue-50 rounded-full mt-1 uppercase tracking-wide;
+        padding: 0.125rem 0.5rem;
+      }
+
+      .item .artist {
+        @apply text-sm text-gray-500 mt-0.5;
+      }
+
+      /* Embeds */
+      .embed {
+        @apply rounded-lg overflow-hidden bg-gray-100 shadow mb-6;
+      }
+
+      .embed iframe {
+        @apply w-full border-0 block;
+        aspect-ratio: 16 / 9;
+      }
+
+      .embed-soundcloud iframe {
+        aspect-ratio: unset;
+        height: 166px;
+      }
+
+      .embed-meta {
+        @apply px-4 py-3;
+      }
+
+      .embed-meta a {
+        @apply no-underline text-gray-900 font-semibold;
+      }
+
+      .embed-meta a:hover {
+        @apply text-blue-600;
+      }
+
+      .embed-meta .artist {
+        @apply text-sm text-gray-500 mt-0.5;
+      }
+
+      /* Prose */
+      p {
+        @apply mb-4;
+      }
+
+      blockquote {
+        @apply border-l-4 border-blue-500 pl-5 py-3 rounded-r-lg text-gray-600 mx-0 mb-4;
+        background: rgba(59, 130, 246, 0.04);
+      }
+
+      code {
+        @apply text-sm bg-gray-100 border border-gray-200 rounded;
+        padding: 0.15em 0.4em;
+      }
+
+      pre {
+        @apply bg-slate-900 text-slate-200 rounded-lg p-5 overflow-x-auto text-sm leading-relaxed shadow mb-4;
+      }
+
+      pre code {
+        @apply bg-transparent border-0 p-0 text-inherit;
+      }
+    }
+  </style>
+{{end}}

@@ -1,0 +1,6 @@
+{{define "foot.html"}}
+  {{range .Theme.CDNJS}}<script src="{{.}}"></script>
+  {{end}}
+  {{range .Theme.JS}}<script src="{{.}}"></script>
+  {{end}}
+{{end}}
