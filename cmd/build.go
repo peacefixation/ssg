@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	outputDir  string
-	cleanBuild bool
+	outputDir   string
+	cleanBuild  bool
+	buildDrafts bool
 )
 
 var buildCmd = &cobra.Command{
@@ -24,6 +25,7 @@ var buildCmd = &cobra.Command{
 func init() {
 	buildCmd.Flags().StringVarP(&outputDir, "output", "o", "", "output directory (overrides config)")
 	buildCmd.Flags().BoolVar(&cleanBuild, "clean", false, "clean output directory before build")
+	buildCmd.Flags().BoolVar(&buildDrafts, "drafts", false, "include draft items in the build")
 }
 
 func runBuild(cmd *cobra.Command, args []string) error {
@@ -37,6 +39,7 @@ func runBuild(cmd *cobra.Command, args []string) error {
 	if outputDir != "" {
 		cfg.OutputDir = outputDir
 	}
+	cfg.Drafts = buildDrafts
 
 	if err := config.Validate(cfg); err != nil {
 		return fmt.Errorf("invalid config: %w", err)

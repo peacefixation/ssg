@@ -15,8 +15,9 @@ import (
 )
 
 var (
-	servePort  int
-	watchFiles bool
+	servePort   int
+	watchFiles  bool
+	serveDrafts bool
 )
 
 var serveCmd = &cobra.Command{
@@ -28,6 +29,7 @@ var serveCmd = &cobra.Command{
 func init() {
 	serveCmd.Flags().IntVarP(&servePort, "port", "p", 8080, "port to serve on")
 	serveCmd.Flags().BoolVar(&watchFiles, "watch", false, "watch for changes and rebuild")
+	serveCmd.Flags().BoolVar(&serveDrafts, "drafts", false, "include draft items")
 }
 
 // collectWatchPaths returns all directories under each dirPath, plus any plain
@@ -65,6 +67,7 @@ func runServe(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return fmt.Errorf("loading config: %w", err)
 	}
+	cfg.Drafts = serveDrafts
 
 	if err := config.Validate(cfg); err != nil {
 		return fmt.Errorf("invalid config: %w", err)
@@ -100,6 +103,7 @@ func runServe(cmd *cobra.Command, args []string) error {
 		if err != nil {
 			return fmt.Errorf("loading config: %w", err)
 		}
+		currentCfg.Drafts = serveDrafts
 		_, err = site.Build(currentCfg, registry, false)
 		return err
 	}

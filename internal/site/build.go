@@ -249,6 +249,10 @@ func buildItem(
 		}
 	}
 
+	if isDraft(item.Data) && !cfg.Drafts {
+		return 0, nil
+	}
+
 	// Allow frontmatter / list.yaml to override the page template.
 	if tmpl, ok := item.Data["template"].(string); ok && tmpl != "" {
 		item.Config.Template = tmpl
@@ -350,6 +354,9 @@ func buildChildren(
 			if defaults := loadItemTypeDefaults(cfg.ItemsDir, typeName); defaults != nil {
 				applyTypeDefaults(data, defaults)
 			}
+		}
+		if isDraft(data) && !cfg.Drafts {
+			continue
 		}
 		data["outputPath"] = childCfg.OutputPath
 		data["count"] = len(childCfg.Children)
@@ -462,6 +469,12 @@ func applyTypeDefaults(data map[string]any, defaults map[string]any) {
 func stemOf(path string) string {
 	base := filepath.Base(path)
 	return strings.TrimSuffix(base, filepath.Ext(base))
+}
+
+// isDraft reports whether item data contains draft: true.
+func isDraft(data map[string]any) bool {
+	b, ok := data["draft"].(bool)
+	return ok && b
 }
 
 // first returns the first non-empty string from the arguments.

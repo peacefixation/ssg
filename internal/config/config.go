@@ -18,6 +18,7 @@ type SiteConfig struct {
 	Theme       string       `mapstructure:"theme"`
 	Defaults    Defaults     `mapstructure:"defaults"`
 	Server      ServerConfig `mapstructure:"server"`
+	Drafts      bool         `mapstructure:"-"`
 }
 
 // Defaults holds fallback build config used when an item does not specify its own.
