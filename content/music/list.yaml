@@ -1,4 +1,6 @@
 title: Music
+cardTemplate: music-item.html
 types:
   - soundcloud
   - youtube
+  - post

@@ -3,14 +3,8 @@
 <html lang="en">
 <head>{{template "head.html" .}}</head>
 <body>
-  {{if .platform}}
-    {{render (printf "platform/%s.html" .platform) .}}
-  {{else if .body}}
-    {{if .title}}<h1>{{.title}}</h1>{{end}}
-    {{.body}}
-  {{else if .url}}
-    {{render "item.html" .}}
-  {{end}}
+  {{if .title}}<h1>{{.title}}</h1>{{end}}
+  {{.body}}
   {{range .List}}{{.}}{{end}}
   {{template "foot.html" .}}
 </body>

@@ -1,4 +1,4 @@
-{{define "platform/soundcloud.html"}}
+{{define "embed/soundcloud.html"}}
 <div class="embed embed-soundcloud">
   {{if .url}}
   <iframe
@@ -9,9 +9,5 @@
     allow="autoplay">
   </iframe>
   {{end}}
-  <div class="embed-meta">
-    <span class="title">{{.title}}</span>
-    {{if .artist}}<span class="artist">{{.artist}}</span>{{end}}
-  </div>
 </div>
 {{end}}

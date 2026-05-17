@@ -102,7 +102,7 @@ Item type definitions live in `items/`:
 # items/youtube.yaml
 name: YouTube Video
 defaults:
-  platform: youtube
+  embed: youtube
 fields:
   - name: url
     required: true

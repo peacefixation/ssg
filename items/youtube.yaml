@@ -1,6 +1,7 @@
 name: YouTube Video
 defaults:
-  platform: youtube
+  embed: youtube
+  template: music-page.html
 fields:
   - name: url
     required: true

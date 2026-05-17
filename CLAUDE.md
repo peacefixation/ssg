@@ -100,7 +100,7 @@ Every template receives these variables:
 | `.List` | Slice of `template.HTML` card fragments for child items |
 | `.Theme` | `.Theme.CSS` and `.Theme.JS` — root-relative asset URLs |
 
-Plus all fields from the content file itself (e.g. `.title`, `.body`, `.url`, `.platform`).
+Plus all fields from the content file itself (e.g. `.title`, `.body`, `.url`, `.embed`).
 
 ## Item Types (`items/`)
 
@@ -110,7 +110,7 @@ Item types standardise the fields and build-time defaults for a class of content
 # items/youtube.yaml
 name: YouTube Video
 defaults:
-  platform: youtube      # injected into item data if not already set
+  embed: youtube      # injected into item data if not already set
 fields:
   - name: url
     required: true
@@ -149,17 +149,17 @@ themes/default/
 
 Theme partials are loaded into the same template set as site templates. Every page template calls `{{template "head.html" .}}` and `{{template "foot.html" .}}`.
 
-## Platform Templates
+## Embed Templates
 
-Platform-specific embed templates live in `templates/platform/`. A card template dispatches to the correct one using the `render` custom function:
+Embed templates live in `templates/embed/`. A card template dispatches to the correct one using the `render` custom function:
 
 ```html
-{{render (printf "platform/%s.html" .platform) .}}
+{{render (printf "embed/%s.html" .embed) .}}
 ```
 
 `render` calls `tmpl.ExecuteTemplate` at runtime, enabling dynamic dispatch without Go template's static `{{template}}` limitation.
 
-Current platforms: `youtube`, `soundcloud`.
+Current embeds: `youtube`, `soundcloud`.
 
 ## Frameworks
 

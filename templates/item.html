@@ -1,14 +1,7 @@
 {{define "item.html"}}
 <div class="item">
-  {{if .platform}}
-    {{render (printf "platform/%s.html" .platform) .}}
-  {{else}}
-    <a href="{{.url}}" target="_blank" rel="noopener noreferrer">
-      {{if .thumbnail}}<img src="{{.thumbnail}}" alt="{{.title}}">{{end}}
-      <span class="title">{{.title}}</span>
-    </a>
-    {{if .artist}}<span class="artist">{{.artist}}</span>{{end}}
-    {{if .description}}<p class="description">{{.description}}</p>{{end}}
-  {{end}}
+  <a href="{{.url}}" target="_blank" rel="noopener noreferrer">
+    <span class="title">{{.title}}</span>
+  </a>
 </div>
 {{end}}

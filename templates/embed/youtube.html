@@ -1,4 +1,4 @@
-{{define "platform/youtube.html"}}
+{{define "embed/youtube.html"}}
 <div class="embed embed-youtube">
   {{$id := youtubeID .url}}
   {{if $id}}
@@ -10,9 +10,5 @@
     allowfullscreen>
   </iframe>
   {{end}}
-  <div class="embed-meta">
-    <span class="title">{{.title}}</span>
-    {{if .artist}}<span class="artist">{{.artist}}</span>{{end}}
-  </div>
 </div>
 {{end}}

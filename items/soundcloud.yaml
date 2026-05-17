@@ -1,6 +1,7 @@
 name: SoundCloud Track
 defaults:
-  platform: soundcloud
+  embed: soundcloud
+  template: music-page.html
 fields:
   - name: url
     required: true
