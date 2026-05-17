@@ -1,0 +1,8 @@
+{{define "blog-item.html"}}
+<div class="item">
+  <a href="/{{.outputPath}}">
+    <span class="title">{{.title}}</span>
+  </a>
+  {{if .tags}}<span class="tags">{{.tags}}</span>{{end}}
+</div>
+{{end}}

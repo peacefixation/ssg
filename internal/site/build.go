@@ -328,8 +328,8 @@ func buildChildren(
 	// Render a card fragment for each displayed child.
 	fragments := make([]template.HTML, 0, len(entries))
 	for _, e := range entries {
-		// Allow child data to override the card template.
-		cardTemplate := e.cfg.CardTemplate
+		// Parent list's cardTemplate is the default; child data can override.
+		cardTemplate := itemCfg.CardTemplate
 		if t, ok := e.data["cardTemplate"].(string); ok && t != "" {
 			cardTemplate = t
 		}

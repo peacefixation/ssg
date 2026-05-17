@@ -4,16 +4,16 @@ A convention-based static site generator written in Go. Content lives in files; 
 
 ## Concepts
 
-**Items** are content files (`.md`, `.json`, `.yaml`) in the content directory. Each item has a data source, a template, and an output path.
+**Items** are content files (`.md`, `.yaml`) in the content directory. Each item has a data source, a template, and an output path. Items can be anything: a home page, a blog post, an embedded video, a link.
 
 **Lists** are directories containing a `list.yaml` file. A list renders its children as cards, sorted and paginated according to its config. Lists can be nested.
 
 ## Getting started
 
-Initialise a new site in the current directory:
+Initialise a new site skeleton in the current directory:
 
 ```bash
-ssg new mysite
+ssg init mysite
 ```
 
 This scaffolds:
@@ -42,6 +42,7 @@ contentDir: content
 outputDir: public
 templateDir: templates
 themesDir: themes
+itemsDir: items
 theme: default
 
 defaults:
@@ -55,29 +56,43 @@ defaults:
     limit: 0        # 0 = unlimited
 ```
 
-## Adding a list
+## Creating a list
 
-Create a directory under `content/` with a `list.yaml`:
+```bash
+ssg new list music --title "Music" --types youtube,soundcloud
+```
+
+Or interactively:
+
+```bash
+ssg new
+```
+
+This creates `content/music/list.yaml`:
 
 ```yaml
-# content/music/list.yaml
 title: Music
 types:
   - youtube
   - soundcloud
 ```
 
-The `types` field restricts which item types can be added to this list, and corresponds to definition files in the `items/` directory.
+The `types` field restricts which item types can be added to the list. Leave it out to allow all types. Lists can be nested using path arguments: `ssg new list music/live --title "Live Sets"`.
 
 ## Adding items
 
-Use `ssg add` to add a new item to a list:
-
 ```bash
-ssg add --list music --type youtube url=https://youtu.be/xyz title="Banco de Gaia"
+ssg new item --list music --type youtube url=https://youtu.be/xyz title="Banco de Gaia"
 ```
 
-Required fields are defined by the item type. Missing required fields produce an error. Items are written as JSON files named `{timestamp}-{slug}.json`.
+Or run `ssg new` with no arguments for an interactive prompt.
+
+Fields are supplied as `key=value` arguments. Required fields are defined by the item type — missing required fields produce an error.
+
+Items are written as timestamped files named `{timestamp}-{slug}.{ext}`, e.g. `20260418T120000Z-banco-de-gaia.yaml`. The format depends on the item type:
+
+- Most types → `.yaml` file
+- Types with `format: markdown` → `.md` file with YAML frontmatter and an empty body for prose content
 
 ## Item types
 
@@ -97,11 +112,45 @@ fields:
 
 At build time, `defaults` are merged into item data (item fields take precedence).
 
+To make an item type produce a markdown file with YAML frontmatter, add `format: markdown`:
+
+```yaml
+# items/post.yaml
+name: Post
+format: markdown
+fields:
+  - name: title
+    required: true
+  - name: tags
+    required: true
+```
+
+This produces a `.md` file with a YAML frontmatter block and an empty body for the post content.
+
+## Custom templates
+
+Any item can override its template by setting a `template` field in its frontmatter or YAML data:
+
+```yaml
+# content/blog/20260517T053555Z-my-post.md
+---
+title: My Post
+tags: Go
+template: blog-post.html
+---
+
+Post body here.
+```
+
+The named template must exist in `templateDir`.
+
 ## CLI reference
 
 | Command | Description |
 |---|---|
-| `ssg new <name>` | Scaffold a new site in the current directory |
+| `ssg init <name>` | Scaffold a new site skeleton |
 | `ssg build [--clean]` | Build the site to `outputDir` |
 | `ssg serve [--watch]` | Serve locally; `--watch` hot-reloads on changes |
-| `ssg add --list <list> --type <type> [key=value ...]` | Add a new item to a list |
+| `ssg new` | Interactively create a list or item |
+| `ssg new list <name> --title <title> [flags]` | Create a new list |
+| `ssg new item --list <list> --type <type> [key=value ...]` | Add a new item to a list |

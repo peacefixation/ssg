@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"io/fs"
 	"os"
+	"path/filepath"
 
 	"github.com/peacefixation/ssg/internal/config"
 	"github.com/peacefixation/ssg/internal/datasource"
@@ -26,6 +28,36 @@ var serveCmd = &cobra.Command{
 func init() {
 	serveCmd.Flags().IntVarP(&servePort, "port", "p", 8080, "port to serve on")
 	serveCmd.Flags().BoolVar(&watchFiles, "watch", false, "watch for changes and rebuild")
+}
+
+// collectWatchPaths returns all directories under each dirPath, plus any plain
+// file paths, so that inotify watches every subdirectory recursively.
+func collectWatchPaths(paths ...string) ([]string, error) {
+	var result []string
+	for _, p := range paths {
+		info, err := os.Stat(p)
+		if err != nil {
+			// Skip paths that don't exist (e.g. cfgFile not yet created).
+			continue
+		}
+		if !info.IsDir() {
+			result = append(result, p)
+			continue
+		}
+		err = filepath.WalkDir(p, func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if d.IsDir() {
+				result = append(result, path)
+			}
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+	return result, nil
 }
 
 func runServe(cmd *cobra.Command, args []string) error {
@@ -78,12 +110,15 @@ func runServe(cmd *cobra.Command, args []string) error {
 	}
 	defer fw.Close()
 
-	paths := []string{cfg.TemplateDir, cfg.ContentDir, cfgFile}
+	paths, err := collectWatchPaths(cfg.TemplateDir, cfg.ContentDir, cfgFile)
+	if err != nil {
+		return fmt.Errorf("collecting watch paths: %w", err)
+	}
 	w, err := watcher.New(fw, paths, rebuild)
 	if err != nil {
 		return fmt.Errorf("setting up watcher: %w", err)
 	}
 
-	fmt.Printf("Watching %v for changes...\n", paths)
+	fmt.Printf("Watching %d paths for changes...\n", len(paths))
 	return w.Run(cmd.Context())
 }
