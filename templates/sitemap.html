@@ -1,0 +1,16 @@
+{{define "sitemap.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>{{template "head.html" .}}</head>
+<body>
+  {{template "nav.html" .}}
+  {{if .title}}<h1>{{.title}}</h1>{{end}}
+  {{if .SiteMap}}
+  <ul class="sitemap">
+    {{range .SiteMap}}{{template "sitemap-node.html" .}}{{end}}
+  </ul>
+  {{end}}
+  {{template "foot.html" .}}
+</body>
+</html>
+{{end}}

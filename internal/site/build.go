@@ -75,9 +75,14 @@ func Build(cfg *config.SiteConfig, registry *datasource.Registry, clean bool) (i
 		}
 	}
 
+	var siteMap []config.SiteMapNode
+	if cfg.SiteMap {
+		siteMap = buildSiteMap(rootItems, registry)
+	}
+
 	count := 0
 	for _, itemCfg := range rootItems {
-		n, err := buildItem(cfg, itemCfg, registry, r, rootNavItems, themeData, []map[string]any{})
+		n, err := buildItem(cfg, itemCfg, registry, r, rootNavItems, themeData, []map[string]any{}, siteMap)
 		if err != nil {
 			return count, fmt.Errorf("building item %q: %w", itemCfg.Name, err)
 		}
@@ -99,6 +104,34 @@ func loadTheme(cfg *config.SiteConfig) (theme.Data, string, error) {
 		return theme.Data{}, "", fmt.Errorf("loading theme %q: %w", cfg.Theme, err)
 	}
 	return theme.BuildData(themeCfg), theme.TemplateDir(themeDir), nil
+}
+
+// buildSiteMap recursively builds the full site map tree from scanned items,
+// skipping the homepage. Titles are fetched from each item's datasource.
+func buildSiteMap(items []config.ItemConfig, registry *datasource.Registry) []config.SiteMapNode {
+	nodes := make([]config.SiteMapNode, 0, len(items))
+	for _, itemCfg := range items {
+		if itemCfg.OutputPath == "index.html" {
+			continue
+		}
+		title := itemCfg.Name
+		if ds, err := registry.New(itemCfg.DataSource); err == nil {
+			if data, err := ds.FetchOne(); err == nil {
+				if t, ok := data["title"].(string); ok && t != "" {
+					title = t
+				}
+				if tmpl, ok := data["template"].(string); ok && tmpl == "sitemap.html" {
+					continue
+				}
+			}
+		}
+		nodes = append(nodes, config.SiteMapNode{
+			Title:      title,
+			OutputPath: itemCfg.OutputPath,
+			Children:   buildSiteMap(itemCfg.Children, registry),
+		})
+	}
+	return nodes
 }
 
 // buildNavItems fetches the data for each item and returns lightweight nav
@@ -232,6 +265,7 @@ func buildItem(
 	rootNavItems []map[string]any,
 	themeData theme.Data,
 	ancestors []map[string]any,
+	siteMap []config.SiteMapNode,
 ) (int, error) {
 	ds, err := registry.New(itemCfg.DataSource)
 	if err != nil {
@@ -287,7 +321,7 @@ func buildItem(
 	childAncestors[len(ancestors)] = map[string]any{"title": title, "outputPath": item.OutputPath}
 
 	// Recursively build child pages and collect their card fragments.
-	fragments, childCount, err := buildChildren(cfg, itemCfg, registry, r, rootNavItems, themeData, childAncestors)
+	fragments, childCount, err := buildChildren(cfg, itemCfg, registry, r, rootNavItems, themeData, childAncestors, siteMap)
 	if err != nil {
 		return 0, err
 	}
@@ -299,6 +333,8 @@ func buildItem(
 	item.Data["Theme"] = themeData
 	item.Data["BreadcrumbLinks"] = ancestors
 	item.Data["BreadcrumbCurrent"] = title
+	item.Data["SiteMap"] = siteMap
+	item.Data["PageTemplate"] = item.Config.Template
 
 	if err := writeItem(cfg.OutputDir, item, r); err != nil {
 		return 0, err
@@ -324,6 +360,7 @@ func buildChildren(
 	rootNavItems []map[string]any,
 	themeData theme.Data,
 	ancestors []map[string]any,
+	siteMap []config.SiteMapNode,
 ) ([]template.HTML, int, error) {
 	if len(itemCfg.Children) == 0 {
 		return nil, 0, nil
@@ -332,7 +369,7 @@ func buildChildren(
 	// Build every child page first (regardless of limit, so all pages exist).
 	totalCount := 0
 	for _, childCfg := range itemCfg.Children {
-		n, err := buildItem(cfg, childCfg, registry, r, rootNavItems, themeData, ancestors)
+		n, err := buildItem(cfg, childCfg, registry, r, rootNavItems, themeData, ancestors, siteMap)
 		if err != nil {
 			return nil, 0, fmt.Errorf("building child %q: %w", childCfg.Name, err)
 		}

@@ -1,4 +1,16 @@
 {{define "foot.html"}}
+  {{if and .SiteMap (ne .PageTemplate "sitemap.html")}}
+  <footer>
+    <nav class="sitemap-footer">
+      {{range .SiteMap}}
+      <div class="sitemap-col">
+        <a href="/{{.OutputPath}}">{{.Title}}</a>
+        {{if .Children}}({{len .Children}}){{end}}
+      </div>
+      {{end}}
+    </nav>
+  </footer>
+  {{end}}
   {{range .Theme.CDNJS}}<script src="{{.}}"></script>
   {{end}}
   {{range .Theme.JS}}<script src="{{.}}"></script>

@@ -1,4 +1,4 @@
-.PHONY: build serve watch test
+.PHONY: build serve watch test add-item add-list
 
 build:
 	go build .
@@ -12,5 +12,8 @@ watch:
 test:
 	go test ./...
 
-add:
-	go run . add
+new-item:
+	go run . new item
+
+new-list:
+	go run . new list

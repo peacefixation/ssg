@@ -19,6 +19,15 @@ type SiteConfig struct {
 	Defaults    Defaults     `mapstructure:"defaults"`
 	Server      ServerConfig `mapstructure:"server"`
 	Drafts      bool         `mapstructure:"-"`
+	SiteMap     bool         `mapstructure:"sitemap"`
+}
+
+// SiteMapNode is one node in the site map tree.
+// Directory items carry Children; leaf items have an empty Children slice.
+type SiteMapNode struct {
+	Title      string
+	OutputPath string
+	Children   []SiteMapNode
 }
 
 // Defaults holds fallback build config used when an item does not specify its own.

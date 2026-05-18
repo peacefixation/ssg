@@ -1,0 +1,10 @@
+{{define "sitemap-node.html"}}
+<li>
+  <a href="/{{.OutputPath}}">{{.Title}}</a>
+  {{if .Children}}
+  <ul>
+    {{range .Children}}{{template "sitemap-node.html" .}}{{end}}
+  </ul>
+  {{end}}
+</li>
+{{end}}
