@@ -9,7 +9,8 @@ import (
 // SiteConfig is the top-level configuration for an SSG site.
 type SiteConfig struct {
 	Title       string       `mapstructure:"title"`
-	BaseURL     string       `mapstructure:"baseURL"`
+	BaseURL      string       `mapstructure:"baseURL"`
+	CanonicalURL string       `mapstructure:"canonicalURL"`
 	ContentDir  string       `mapstructure:"contentDir"`
 	OutputDir   string       `mapstructure:"outputDir"`
 	TemplateDir string       `mapstructure:"templateDir"`
@@ -20,6 +21,8 @@ type SiteConfig struct {
 	Server      ServerConfig `mapstructure:"server"`
 	Drafts      bool         `mapstructure:"-"`
 	SiteMap     bool         `mapstructure:"sitemap"`
+	OGCacheFile string       `mapstructure:"ogCacheFile"`
+	RefreshOG   bool         `mapstructure:"-"`
 }
 
 // SiteMapNode is one node in the site map tree.
@@ -105,6 +108,7 @@ func Load(path string) (*SiteConfig, error) {
 	viper.SetDefault("itemsDir", "items")
 	viper.SetDefault("server.host", "localhost")
 	viper.SetDefault("server.port", 8080)
+	viper.SetDefault("ogCacheFile", "og-cache.json")
 
 	var cfg SiteConfig
 	if err := viper.Unmarshal(&cfg); err != nil {

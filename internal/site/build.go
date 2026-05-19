@@ -3,6 +3,8 @@ package site
 import (
 	"fmt"
 	"html/template"
+	"log"
+	"maps"
 	"os"
 	"path/filepath"
 	"sort"
@@ -11,6 +13,7 @@ import (
 
 	"github.com/peacefixation/ssg/internal/config"
 	"github.com/peacefixation/ssg/internal/datasource"
+	"github.com/peacefixation/ssg/internal/enricher"
 	"github.com/peacefixation/ssg/internal/renderer"
 	"github.com/peacefixation/ssg/internal/theme"
 	"gopkg.in/yaml.v3"
@@ -80,9 +83,26 @@ func Build(cfg *config.SiteConfig, registry *datasource.Registry, clean bool) (i
 		siteMap = buildSiteMap(rootItems, registry)
 	}
 
+	var ogEnricher *enricher.OGEnricher
+	if cfg.OGCacheFile != "" {
+		referer := cfg.CanonicalURL
+		if referer == "" {
+			referer = cfg.BaseURL
+		}
+		ogEnricher = enricher.New(cfg.OGCacheFile, referer)
+		if err := ogEnricher.LoadCache(); err != nil {
+			log.Printf("warning: loading OG cache: %v", err)
+		}
+		defer func() {
+			if err := ogEnricher.SaveCache(); err != nil {
+				log.Printf("warning: saving OG cache: %v", err)
+			}
+		}()
+	}
+
 	count := 0
 	for _, itemCfg := range rootItems {
-		n, err := buildItem(cfg, itemCfg, registry, r, rootNavItems, themeData, []map[string]any{}, siteMap)
+		n, err := buildItem(cfg, itemCfg, registry, r, rootNavItems, themeData, []map[string]any{}, siteMap, ogEnricher)
 		if err != nil {
 			return count, fmt.Errorf("building item %q: %w", itemCfg.Name, err)
 		}
@@ -266,6 +286,7 @@ func buildItem(
 	themeData theme.Data,
 	ancestors []map[string]any,
 	siteMap []config.SiteMapNode,
+	ogEnricher *enricher.OGEnricher,
 ) (int, error) {
 	ds, err := registry.New(itemCfg.DataSource)
 	if err != nil {
@@ -281,6 +302,19 @@ func buildItem(
 		if defaults := loadItemTypeDefaults(cfg.ItemsDir, typeName); defaults != nil {
 			applyTypeDefaults(item.Data, defaults)
 		}
+	}
+
+	if enrichType, _ := item.Data["enrich"].(string); enrichType == "opengraph" && ogEnricher != nil {
+		if url, _ := item.Data["url"].(string); url != "" {
+			force := cfg.RefreshOG || forceRefreshItem(item.Data)
+			ogData, err := ogEnricher.Enrich(url, force)
+			if err != nil {
+				log.Printf("warning: OG enrichment failed for %s: %v", url, err)
+			} else {
+				maps.Copy(item.Data, ogData)
+			}
+		}
+		delete(item.Data, "enrich")
 	}
 
 	if isDraft(item.Data) && !cfg.Drafts {
@@ -321,7 +355,7 @@ func buildItem(
 	childAncestors[len(ancestors)] = map[string]any{"title": title, "outputPath": item.OutputPath}
 
 	// Recursively build child pages and collect their card fragments.
-	fragments, childCount, err := buildChildren(cfg, itemCfg, registry, r, rootNavItems, themeData, childAncestors, siteMap)
+	fragments, childCount, err := buildChildren(cfg, itemCfg, registry, r, rootNavItems, themeData, childAncestors, siteMap, ogEnricher)
 	if err != nil {
 		return 0, err
 	}
@@ -361,6 +395,7 @@ func buildChildren(
 	themeData theme.Data,
 	ancestors []map[string]any,
 	siteMap []config.SiteMapNode,
+	ogEnricher *enricher.OGEnricher,
 ) ([]template.HTML, int, error) {
 	if len(itemCfg.Children) == 0 {
 		return nil, 0, nil
@@ -369,7 +404,7 @@ func buildChildren(
 	// Build every child page first (regardless of limit, so all pages exist).
 	totalCount := 0
 	for _, childCfg := range itemCfg.Children {
-		n, err := buildItem(cfg, childCfg, registry, r, rootNavItems, themeData, ancestors, siteMap)
+		n, err := buildItem(cfg, childCfg, registry, r, rootNavItems, themeData, ancestors, siteMap, ogEnricher)
 		if err != nil {
 			return nil, 0, fmt.Errorf("building child %q: %w", childCfg.Name, err)
 		}
@@ -391,6 +426,17 @@ func buildChildren(
 			if defaults := loadItemTypeDefaults(cfg.ItemsDir, typeName); defaults != nil {
 				applyTypeDefaults(data, defaults)
 			}
+		}
+		if enrichType, _ := data["enrich"].(string); enrichType == "opengraph" && ogEnricher != nil {
+			if url, _ := data["url"].(string); url != "" {
+				ogData, err := ogEnricher.Enrich(url, cfg.RefreshOG || forceRefreshItem(data))
+				if err != nil {
+					log.Printf("warning: OG enrichment failed for %s: %v", url, err)
+				} else {
+					maps.Copy(data, ogData)
+				}
+			}
+			delete(data, "enrich")
 		}
 		if isDraft(data) && !cfg.Drafts {
 			continue
@@ -511,6 +557,12 @@ func stemOf(path string) string {
 // isDraft reports whether item data contains draft: true.
 func isDraft(data map[string]any) bool {
 	b, ok := data["draft"].(bool)
+	return ok && b
+}
+
+// forceRefreshItem reports whether item data contains og_refresh: true.
+func forceRefreshItem(data map[string]any) bool {
+	b, ok := data["og_refresh"].(bool)
 	return ok && b
 }
 

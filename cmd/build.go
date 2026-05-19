@@ -14,6 +14,7 @@ var (
 	outputDir   string
 	cleanBuild  bool
 	buildDrafts bool
+	refreshOG   bool
 )
 
 var buildCmd = &cobra.Command{
@@ -26,6 +27,7 @@ func init() {
 	buildCmd.Flags().StringVarP(&outputDir, "output", "o", "", "output directory (overrides config)")
 	buildCmd.Flags().BoolVar(&cleanBuild, "clean", false, "clean output directory before build")
 	buildCmd.Flags().BoolVar(&buildDrafts, "drafts", false, "include draft items in the build")
+	buildCmd.Flags().BoolVar(&refreshOG, "refresh-og", false, "bypass OG cache and re-fetch all opengraph items")
 }
 
 func runBuild(cmd *cobra.Command, args []string) error {
@@ -40,6 +42,7 @@ func runBuild(cmd *cobra.Command, args []string) error {
 		cfg.OutputDir = outputDir
 	}
 	cfg.Drafts = buildDrafts
+	cfg.RefreshOG = refreshOG
 
 	if err := config.Validate(cfg); err != nil {
 		return fmt.Errorf("invalid config: %w", err)

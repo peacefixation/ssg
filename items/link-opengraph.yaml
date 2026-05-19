@@ -1,0 +1,10 @@
+name: OpenGraph Link
+defaults:
+  embed: link-opengraph
+  enrich: opengraph
+fields:
+  - name: url
+    required: true
+  - name: title
+    required: true
+  - name: tags

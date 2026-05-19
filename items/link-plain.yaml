@@ -1,0 +1,9 @@
+name: Plain Link
+defaults:
+  embed: link-plain
+fields:
+  - name: url
+    required: true
+  - name: title
+    required: true
+  - name: tags

@@ -1,0 +1,9 @@
+{{define "link-item.html"}}
+{{if .embed}}
+  {{render (printf "embed/%s.html" .embed) .}}
+{{else}}
+  <div class="item">
+    <a href="{{.url}}" target="_blank" rel="noopener noreferrer">{{.title}}</a>
+  </div>
+{{end}}
+{{end}}

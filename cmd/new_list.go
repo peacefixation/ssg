@@ -77,83 +77,6 @@ func runNewList(cmd *cobra.Command, args []string) error {
 	return createList(cfg, args[0], lc)
 }
 
-func interactiveNewList() error {
-	cfg, err := config.Load(cfgFile)
-	if err != nil {
-		return fmt.Errorf("loading config: %w", err)
-	}
-
-	lists, err := scanLists(cfg.ContentDir)
-	if err != nil {
-		return err
-	}
-	fileItems, err := scanFileItemParents(cfg.ContentDir)
-	if err != nil {
-		return err
-	}
-
-	// Combine all parent options: top level, existing lists, then file items.
-	allParents := make([]listEntry, 0, len(lists)+len(fileItems))
-	allParents = append(allParents, lists...)
-	allParents = append(allParents, fileItems...)
-
-	parentOptions := make([]string, 0, len(allParents)+1)
-	parentOptions = append(parentOptions, "Top level")
-	for _, p := range allParents {
-		parentOptions = append(parentOptions, p.title)
-	}
-
-	parentIdx, err := promptSelect("Where should the new list live?", parentOptions)
-	if err != nil {
-		return err
-	}
-
-	var name string
-	for {
-		name, err = promptInput("List name", "")
-		if err != nil {
-			return err
-		}
-		if strings.TrimSpace(name) != "" {
-			break
-		}
-		fmt.Println("Name is required")
-	}
-
-	var fullPath string
-	if parentIdx == 0 {
-		fullPath = name
-	} else {
-		fullPath = allParents[parentIdx-1].path + "/" + name
-	}
-
-	var title string
-	for {
-		title, err = promptInput("Title", "")
-		if err != nil {
-			return err
-		}
-		if strings.TrimSpace(title) != "" {
-			break
-		}
-		fmt.Println("Title is required")
-	}
-
-	typesRaw, err := promptInput("Types (comma-separated, blank to skip)", "")
-	if err != nil {
-		return err
-	}
-	lc := newListConfig{Title: title}
-	if typesRaw != "" {
-		for _, t := range strings.Split(typesRaw, ",") {
-			if s := strings.TrimSpace(t); s != "" {
-				lc.Types = append(lc.Types, s)
-			}
-		}
-	}
-
-	return createList(cfg, fullPath, lc)
-}
 
 func createList(cfg *config.SiteConfig, name string, lc newListConfig) error {
 	destDir := filepath.Join(cfg.ContentDir, name)
@@ -233,12 +156,6 @@ type newListConfig struct {
 }
 
 // --- list discovery ---
-
-// listEntry describes a list reachable via the CLI.
-type listEntry struct {
-	path  string // content-relative path, e.g. "music" or "music/20260418-lsg/live"
-	title string // display title shown in interactive prompts
-}
 
 // fileItemMeta holds the fields from a content file that are relevant to list discovery.
 type fileItemMeta struct {
@@ -396,47 +313,6 @@ func toStringSlice(v any) []string {
 	return nil
 }
 
-// scanFileItemParents returns file items inside list directories that can receive
-// new sub-lists. The entry path is the sibling container path (dir/stem), which
-// is passed as the parent when calling createList.
-func scanFileItemParents(contentDir string) ([]listEntry, error) {
-	var entries []listEntry
-	err := filepath.WalkDir(contentDir, func(path string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() {
-			return err
-		}
-		name := filepath.Base(path)
-		if name == "list.yaml" || !scanListExts[strings.ToLower(filepath.Ext(path))] {
-			return nil
-		}
-		// Only include files that live directly inside a list directory.
-		parentDir := filepath.Dir(path)
-		if _, statErr := os.Stat(filepath.Join(parentDir, "list.yaml")); statErr != nil {
-			return nil
-		}
-		meta := readFileItemMeta(path)
-		stem := stemFromPath(path)
-		rel, _ := filepath.Rel(contentDir, parentDir)
-
-		var siblingPath string
-		if rel == "." {
-			siblingPath = stem
-		} else {
-			siblingPath = rel + "/" + stem
-		}
-
-		displayTitle := meta.Title
-		if displayTitle == "" {
-			displayTitle = stem
-		}
-		if rel != "." {
-			displayTitle += " [" + rel + "]"
-		}
-		entries = append(entries, listEntry{path: siblingPath, title: displayTitle})
-		return nil
-	})
-	return entries, err
-}
 
 // --- shared helpers (moved from add.go) ---
 

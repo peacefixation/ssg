@@ -1,5 +1,6 @@
-title: My Site
+title: Peace Fixation
 baseURL: http://localhost:8080
+canonicalURL: https://peacefixation.github.io
 contentDir: content
 outputDir: public
 templateDir: templates

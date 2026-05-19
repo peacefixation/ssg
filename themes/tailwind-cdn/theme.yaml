@@ -1,2 +1,5 @@
 name: Tailwind CDN
 description: Tailwind CSS via Play CDN with @apply component styles for ssg markup
+css:
+  - links.css
+  - opengraph.css

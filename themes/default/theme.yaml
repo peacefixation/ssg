@@ -2,3 +2,5 @@ name: Default
 description: Clean, minimal theme
 css:
   - style.css
+  - links.css
+  - opengraph.css

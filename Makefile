@@ -1,7 +1,10 @@
-.PHONY: build serve watch test add-item add-list
+.PHONY: compile site serve watch test new-item new-list
 
-build:
+compile:
 	go build .
+
+site:
+	go run . build
 
 serve:
 	go run . serve

@@ -2,10 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/peacefixation/ssg/internal/config"
 	"github.com/spf13/cobra"
@@ -44,76 +42,6 @@ func runNewItem(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("loading config: %w", err)
 	}
 	return createItem(cfg, newItemList, newItemType, parseFields(args))
-}
-
-
-func interactiveNewItem() error {
-	cfg, err := config.Load(cfgFile)
-	if err != nil {
-		return fmt.Errorf("loading config: %w", err)
-	}
-
-	lists, err := scanLists(cfg.ContentDir)
-	if err != nil {
-		return err
-	}
-	if len(lists) == 0 {
-		return fmt.Errorf("no lists found in %s", cfg.ContentDir)
-	}
-
-	displayNames := make([]string, len(lists))
-	for i, l := range lists {
-		displayNames[i] = l.title
-	}
-	listIdx, err := promptSelect("Select a list:", displayNames)
-	if err != nil {
-		return err
-	}
-	listName := lists[listIdx].path
-
-	listMeta := readListDirMeta(filepath.Join(cfg.ContentDir, listName, "list.yaml"))
-
-	types, err := loadItemTypes(cfg.ItemsDir, listMeta.types)
-	if err != nil {
-		return fmt.Errorf("loading item types: %w", err)
-	}
-	if len(types) == 0 {
-		return fmt.Errorf("no item types found")
-	}
-
-	typeNames := make([]string, len(types))
-	for i, t := range types {
-		typeNames[i] = t.typeName
-	}
-	typeIdx, err := promptSelect("Select a type:", typeNames)
-	if err != nil {
-		return err
-	}
-	it := types[typeIdx]
-
-	data := make(map[string]string)
-	for _, field := range it.Fields {
-		label := field.Name
-		if field.Required {
-			label += " (required)"
-		}
-		var val string
-		for {
-			val, err = promptInput(label, "")
-			if err != nil {
-				return err
-			}
-			if !field.Required || strings.TrimSpace(val) != "" {
-				break
-			}
-			fmt.Printf("%s is required\n", field.Name)
-		}
-		if val != "" {
-			data[field.Name] = val
-		}
-	}
-
-	return createItem(cfg, listName, it.typeName, data)
 }
 
 func createItem(cfg *config.SiteConfig, listName, typeName string, data map[string]string) error {
@@ -177,62 +105,4 @@ func writeMarkdownItem(dir, typeName string, data map[string]string) error {
 
 var scanListExts = map[string]bool{
 	".md": true, ".markdown": true, ".json": true, ".yaml": true, ".yml": true,
-}
-
-// scanLists returns all lists reachable from contentDir: directory lists (any depth)
-// and sub-lists declared via a "lists" property in file items.
-func scanLists(contentDir string) ([]listEntry, error) {
-	var entries []listEntry
-	err := filepath.WalkDir(contentDir, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if d.IsDir() {
-			listFile := filepath.Join(path, "list.yaml")
-			if _, statErr := os.Stat(listFile); statErr == nil {
-				rel, _ := filepath.Rel(contentDir, path)
-				if rel != "." {
-					title := readListDirMeta(listFile).title
-					if title == "" {
-						title = rel
-					}
-					entries = append(entries, listEntry{path: rel, title: title})
-				}
-			}
-			return nil
-		}
-		if filepath.Base(path) == "list.yaml" || !scanListExts[strings.ToLower(filepath.Ext(path))] {
-			return nil
-		}
-		meta := readFileItemMeta(path)
-		if len(meta.Lists) == 0 {
-			return nil
-		}
-		rel, _ := filepath.Rel(contentDir, path)
-		stem := stemFromPath(path)
-		parentDir := filepath.Dir(rel)
-		if parentDir == "." {
-			parentDir = ""
-		}
-		for _, listName := range meta.Lists {
-			subListFile := filepath.Join(filepath.Dir(path), stem, listName, "list.yaml")
-			if _, statErr := os.Stat(subListFile); statErr != nil {
-				continue
-			}
-			subTitle := readListDirMeta(subListFile).title
-			if subTitle == "" {
-				subTitle = listName
-			}
-			displayTitle := subTitle
-			if meta.Title != "" {
-				displayTitle = meta.Title + " › " + subTitle
-			}
-			entries = append(entries, listEntry{
-				path:  filepath.Join(parentDir, stem, listName),
-				title: displayTitle,
-			})
-		}
-		return nil
-	})
-	return entries, err
 }

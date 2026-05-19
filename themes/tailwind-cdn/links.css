@@ -1,0 +1,16 @@
+:root {
+  --accent:       #3b82f6;
+  --accent-hover: #1d4ed8;
+}
+
+/* Override .item a { no-underline; color: inherit } from Tailwind @layer components */
+.item a.item-link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 600;
+}
+
+.item a.item-link:hover {
+  color: var(--accent-hover);
+}
