@@ -140,6 +140,9 @@ func buildSiteMap(items []config.ItemConfig, registry *datasource.Registry) []co
 		if itemCfg.OutputPath == "index.html" {
 			continue
 		}
+		if itemCfg.ExcludeFromSiteMap {
+			continue
+		}
 		title := itemCfg.Name
 		if ds, err := registry.New(itemCfg.DataSource); err == nil {
 			if data, err := ds.FetchOne(); err == nil {

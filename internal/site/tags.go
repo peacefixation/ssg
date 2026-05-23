@@ -190,9 +190,10 @@ func buildTagsTree(tagMap map[string][]taggedItem, cfg *config.SiteConfig, regis
 				"style": first(style, "list"),
 			},
 		},
-		Children:  tagChildren,
-		SortBy:    "title",
-		SortOrder: "asc",
+		Children:           tagChildren,
+		SortBy:             "title",
+		SortOrder:          "asc",
+		ExcludeFromSiteMap: true,
 	}
 }
 

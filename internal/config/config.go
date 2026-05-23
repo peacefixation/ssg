@@ -63,10 +63,11 @@ type ItemConfig struct {
 	OutputPath         string           `mapstructure:"outputPath"`
 	DataSource         DataSourceConfig `mapstructure:"dataSource"`
 	DataSourceOverride any              `mapstructure:"-"` // holds a datasource.DataSource; avoids import cycle
-	Children           []ItemConfig
-	SortBy             string `mapstructure:"sortBy"`
-	SortOrder          string `mapstructure:"sortOrder"`
-	Limit              int    `mapstructure:"limit"`
+	Children             []ItemConfig
+	SortBy               string `mapstructure:"sortBy"`
+	SortOrder            string `mapstructure:"sortOrder"`
+	Limit                int    `mapstructure:"limit"`
+	ExcludeFromSiteMap   bool   `mapstructure:"-"`
 }
 
 // TagsConfig controls the synthesized tags section of the site.
