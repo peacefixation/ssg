@@ -63,7 +63,7 @@ func Build(cfg *config.SiteConfig, registry *datasource.Registry, clean bool) (i
 		return 0, fmt.Errorf("initializing renderer: %w", err)
 	}
 
-	rootItems, err := scanDir(cfg.ContentDir, "", cfg)
+	rootItems, err := scanDir(cfg.ContentDir, "", cfg, listMeta{})
 	if err != nil {
 		return 0, err
 	}
@@ -188,7 +188,7 @@ func buildNavItems(items []config.ItemConfig, registry *datasource.Registry) []m
 //   - Files with a supported extension become page items.
 //   - Subdirectories containing a list.yaml become directory items whose
 //     Children are the result of recursively scanning that subdirectory.
-func scanDir(dir, outputPrefix string, cfg *config.SiteConfig) ([]config.ItemConfig, error) {
+func scanDir(dir, outputPrefix string, cfg *config.SiteConfig, parent listMeta) ([]config.ItemConfig, error) {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -200,7 +200,7 @@ func scanDir(dir, outputPrefix string, cfg *config.SiteConfig) ([]config.ItemCon
 	var items []config.ItemConfig
 	for _, entry := range entries {
 		if entry.IsDir() {
-			item, ok, err := scanDirItem(dir, entry.Name(), outputPrefix, cfg)
+			item, ok, err := scanDirItem(dir, entry.Name(), outputPrefix, cfg, parent)
 			if err != nil {
 				return nil, err
 			}
@@ -219,7 +219,7 @@ func scanDir(dir, outputPrefix string, cfg *config.SiteConfig) ([]config.ItemCon
 
 // scanDirItem checks whether name is a directory item (contains list.yaml).
 // Returns ok=false for directories without list.yaml (they are ignored).
-func scanDirItem(parentDir, name, outputPrefix string, cfg *config.SiteConfig) (config.ItemConfig, bool, error) {
+func scanDirItem(parentDir, name, outputPrefix string, cfg *config.SiteConfig, parent listMeta) (config.ItemConfig, bool, error) {
 	dir := filepath.Join(parentDir, name)
 	listFile := filepath.Join(dir, "list.yaml")
 	if _, err := os.Stat(listFile); err != nil {
@@ -228,17 +228,28 @@ func scanDirItem(parentDir, name, outputPrefix string, cfg *config.SiteConfig) (
 
 	meta := readListMeta(listFile)
 
-	// Resolve each setting: list.yaml overrides site.yaml defaults.
-	tmpl := first(meta.Template, cfg.Defaults.List.Template)
-	cardTemplate := first(meta.CardTemplate, cfg.Defaults.List.CardTemplate)
-	sortBy := first(meta.SortBy, cfg.Defaults.List.SortBy)
-	sortOrder := first(meta.SortOrder, cfg.Defaults.List.SortOrder)
+	// Resolve each setting: list.yaml → parent list → site.yaml defaults.
+	tmpl := first(meta.Template, parent.Template, cfg.Defaults.List.Template)
+	cardTemplate := first(meta.CardTemplate, parent.CardTemplate, cfg.Defaults.List.CardTemplate)
+	sortBy := first(meta.SortBy, parent.SortBy, cfg.Defaults.List.SortBy)
+	sortOrder := first(meta.SortOrder, parent.SortOrder, cfg.Defaults.List.SortOrder)
 	limit := meta.Limit
+	if limit == 0 {
+		limit = parent.Limit
+	}
 	if limit == 0 {
 		limit = cfg.Defaults.List.Limit
 	}
 
-	children, err := scanDir(dir, outputPrefix+name+"/", cfg)
+	resolved := listMeta{
+		Template:     tmpl,
+		CardTemplate: cardTemplate,
+		SortBy:       sortBy,
+		SortOrder:    sortOrder,
+		Limit:        limit,
+	}
+
+	children, err := scanDir(dir, outputPrefix+name+"/", cfg, resolved)
 	if err != nil {
 		return config.ItemConfig{}, false, err
 	}
@@ -346,7 +357,12 @@ func buildItem(
 			if name == "" {
 				continue
 			}
-			sub, ok, err := scanDirItem(siblingDir, name, outputPrefix, cfg)
+			sub, ok, err := scanDirItem(siblingDir, name, outputPrefix, cfg, listMeta{
+					CardTemplate: itemCfg.CardTemplate,
+					SortBy:       itemCfg.SortBy,
+					SortOrder:    itemCfg.SortOrder,
+					Limit:        itemCfg.Limit,
+				})
 			if err != nil {
 				return 0, fmt.Errorf("scanning sub-list %q of %q: %w", name, itemCfg.Name, err)
 			}
