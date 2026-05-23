@@ -1,13 +1,12 @@
 {{define "link-card.html"}}
-{{if .embed}}
-  {{render (printf "embed/%s.html" .embed) .}}
-{{else if .url}}
-  <div class="item">
+<div class="item{{if .embed}} {{.embed}}{{end}}">
+  {{if .embed}}
+    {{render (printf "embed/%s.html" .embed) .}}
+  {{else if .url}}
     <a href="{{.url}}" target="_blank" rel="noopener noreferrer">{{.title}}</a>
-  </div>
-{{else}}
-  <div class="item">
+  {{else}}
     <a href="/{{.outputPath}}">{{.title}}</a>
-  </div>
-{{end}}
+  {{end}}
+  {{template "tag-links.html" .}}
+</div>
 {{end}}

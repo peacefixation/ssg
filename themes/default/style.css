@@ -197,6 +197,8 @@ blockquote {
 }
 
 .item a:hover .title { color: var(--accent); }
+.item a.title:hover,
+.item a.source-path:hover { color: var(--accent); }
 
 .item .tags,
 .item .artist {
