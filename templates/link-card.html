@@ -3,9 +3,9 @@
   {{if .embed}}
     {{render (printf "embed/%s.html" .embed) .}}
   {{else if .url}}
-    <a href="{{.url}}" target="_blank" rel="noopener noreferrer">{{.title}}</a>
+    <a href="{{.url}}" target="_blank" rel="noopener noreferrer">{{if .icon}}{{render (printf "icon-%s.html" .icon) .}}{{end}}{{.title}}</a>
   {{else}}
-    <a href="/{{.outputPath}}">{{.title}}</a>
+    <a href="/{{.outputPath}}">{{if .icon}}{{render (printf "icon-%s.html" .icon) .}}{{end}}{{.title}}</a>
   {{end}}
   {{template "tag-links.html" .}}
 </div>

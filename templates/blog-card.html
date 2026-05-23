@@ -1,7 +1,7 @@
 {{define "blog-card.html"}}
 <div class="item">
   <a href="/{{.outputPath}}">
-    <span class="title">{{.title}}</span>
+    {{if .icon}}{{render (printf "icon-%s.html" .icon) .}}{{end}}<span class="title">{{.title}}</span>
   </a>
   {{if .description}}<p class="description">{{.description}}</p>{{end}}
   {{template "tag-links.html" .}}

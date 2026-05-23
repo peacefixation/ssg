@@ -1,6 +1,7 @@
 name: Plain Link
 defaults:
   embed: link-plain
+  icon: link
   externalLink: true
 fields:
   - name: url

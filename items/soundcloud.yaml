@@ -1,6 +1,7 @@
 name: SoundCloud Track
 defaults:
   embed: soundcloud
+  icon: play
   template: music-item.html
 fields:
   - name: url

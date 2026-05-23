@@ -31,6 +31,8 @@ type SiteConfig struct {
 type SiteMapNode struct {
 	Title      string
 	OutputPath string
+	URL        string
+	Icon       string
 	Children   []SiteMapNode
 }
 

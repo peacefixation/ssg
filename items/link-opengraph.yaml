@@ -1,6 +1,7 @@
 name: OpenGraph Link
 defaults:
   embed: link-opengraph
+  icon: link
   enrich: opengraph
   externalLink: true
 fields:

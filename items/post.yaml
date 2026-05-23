@@ -1,6 +1,7 @@
 name: Post
 format: markdown
 defaults:
+  icon: post
 fields:
   - name: title
     required: true

@@ -1,5 +1,5 @@
 {{define "tag-item-card.html"}}
 <div class="item">
-  <div>{{if .sourcePath}}{{range .sourcePath}}<a href="/{{.outputPath}}" class="source-path">{{.title}}</a> / {{end}}{{end}}{{if .externalLink}}<a href="{{.url}}" target="_blank" rel="noopener noreferrer" class="title">{{.title}}</a>{{else}}<a href="/{{.outputPath}}" class="title">{{.title}}</a>{{end}}</div>
+  <div class="item-line">{{if .sourcePath}}{{range .sourcePath}}<a href="/{{.outputPath}}" class="source-path">{{.title}}</a>/{{end}}{{end}}{{if .externalLink}}<a href="{{.url}}" target="_blank" rel="noopener noreferrer" class="title">{{if .icon}}{{render (printf "icon-%s.html" .icon) .}}{{end}}{{.title}}</a>{{else}}<a href="/{{.outputPath}}" class="title">{{if .icon}}{{render (printf "icon-%s.html" .icon) .}}{{end}}{{.title}}</a>{{end}}</div>
 </div>
 {{end}}

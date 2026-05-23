@@ -86,7 +86,7 @@ func Build(cfg *config.SiteConfig, registry *datasource.Registry, clean bool) (i
 
 	var siteMap []config.SiteMapNode
 	if cfg.SiteMap {
-		siteMap = buildSiteMap(rootItems, registry)
+		siteMap = buildSiteMap(rootItems, registry, cfg.ItemsDir)
 	}
 
 	var ogEnricher *enricher.OGEnricher
@@ -134,7 +134,7 @@ func loadTheme(cfg *config.SiteConfig) (theme.Data, string, error) {
 
 // buildSiteMap recursively builds the full site map tree from scanned items,
 // skipping the homepage. Titles are fetched from each item's datasource.
-func buildSiteMap(items []config.ItemConfig, registry *datasource.Registry) []config.SiteMapNode {
+func buildSiteMap(items []config.ItemConfig, registry *datasource.Registry, itemsDir string) []config.SiteMapNode {
 	nodes := make([]config.SiteMapNode, 0, len(items))
 	for _, itemCfg := range items {
 		if itemCfg.OutputPath == "index.html" {
@@ -144,20 +144,44 @@ func buildSiteMap(items []config.ItemConfig, registry *datasource.Registry) []co
 			continue
 		}
 		title := itemCfg.Name
+		var externalURL, icon string
 		if ds, err := registry.New(itemCfg.DataSource); err == nil {
 			if data, err := ds.FetchOne(); err == nil {
+				if typeName, ok := data["type"].(string); ok {
+					if defaults := loadItemTypeDefaults(itemsDir, typeName); defaults != nil {
+						applyTypeDefaults(data, defaults)
+					}
+				}
 				if t, ok := data["title"].(string); ok && t != "" {
 					title = t
 				}
 				if tmpl, ok := data["template"].(string); ok && tmpl == "sitemap.html" {
 					continue
 				}
+				if u, ok := data["url"].(string); ok {
+					externalURL = u
+				}
+				if ic, ok := data["icon"].(string); ok {
+					icon = ic
+				}
 			}
+		}
+		if icon == "" {
+			ext := strings.ToLower(filepath.Ext(itemCfg.DataSource.Path))
+			if ext == ".md" || ext == ".markdown" {
+				icon = "post"
+			}
+		}
+		children := buildSiteMap(itemCfg.Children, registry, itemsDir)
+		if icon == "" && len(children) > 0 {
+			icon = "list"
 		}
 		nodes = append(nodes, config.SiteMapNode{
 			Title:      title,
 			OutputPath: itemCfg.OutputPath,
-			Children:   buildSiteMap(itemCfg.Children, registry),
+			URL:        externalURL,
+			Icon:       icon,
+			Children:   children,
 		})
 	}
 	return nodes
@@ -324,6 +348,17 @@ func buildItem(
 		}
 	}
 
+	if _, ok := item.Data["icon"]; !ok {
+		if strings.HasSuffix(itemCfg.DataSource.Path, "list.yaml") {
+			item.Data["icon"] = "list"
+		} else {
+			ext := strings.ToLower(filepath.Ext(itemCfg.DataSource.Path))
+			if ext == ".md" || ext == ".markdown" {
+				item.Data["icon"] = "post"
+			}
+		}
+	}
+
 	if enrichType, _ := item.Data["enrich"].(string); enrichType == "opengraph" && ogEnricher != nil {
 		if url, _ := item.Data["url"].(string); url != "" {
 			force := cfg.RefreshOG || forceRefreshItem(item.Data)
@@ -450,6 +485,16 @@ func buildChildren(
 		if typeName, ok := data["type"].(string); ok && typeName != "" {
 			if defaults := loadItemTypeDefaults(cfg.ItemsDir, typeName); defaults != nil {
 				applyTypeDefaults(data, defaults)
+			}
+		}
+		if _, ok := data["icon"]; !ok {
+			if strings.HasSuffix(childCfg.DataSource.Path, "list.yaml") {
+				data["icon"] = "list"
+			} else {
+				ext := strings.ToLower(filepath.Ext(childCfg.DataSource.Path))
+				if ext == ".md" || ext == ".markdown" {
+					data["icon"] = "post"
+				}
 			}
 		}
 		if enrichType, _ := data["enrich"].(string); enrichType == "opengraph" && ogEnricher != nil {

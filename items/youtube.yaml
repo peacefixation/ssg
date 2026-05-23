@@ -1,6 +1,7 @@
 name: YouTube Video
 defaults:
   embed: youtube
+  icon: play
   template: music-item.html
 fields:
   - name: url
