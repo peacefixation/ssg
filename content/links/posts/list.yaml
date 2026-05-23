@@ -1,0 +1,5 @@
+title: Posts
+cardTemplate: link-card.html
+types:
+  - link-plain
+  - link-opengraph
