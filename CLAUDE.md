@@ -24,6 +24,7 @@ content/         — Content files; directory structure mirrors output structure
 internal/
   config/        — SiteConfig, ItemConfig, DataSourceConfig
   datasource/    — DataSource interface; file and API drivers
+  enricher/      — OpenGraph metadata fetching and caching
   renderer/      — Go template renderer with custom functions
   site/          — Build pipeline: scan, build, render, write
   theme/         — Theme loading, asset copying, template partials
@@ -47,22 +48,70 @@ go test ./...
 
 | Command | Description |
 |---|---|
-| `ssg build [--clean]` | Build the site to `outputDir` |
-| `ssg serve [--watch]` | Build and serve locally; `--watch` hot-reloads on changes |
-| `ssg new <name>` | Scaffold a new site skeleton |
-| `ssg add` | Interactively add a new item to an existing list |
+| `ssg build` | Build the site to `outputDir` |
+| `ssg serve` | Build and serve locally |
+| `ssg init <name>` | Scaffold a new site skeleton |
+| `ssg new item` | Add a new item to a list |
+| `ssg new list <name>` | Create a new list directory |
+
+### `ssg build`
+
+| Flag | Description |
+|---|---|
+| `-o, --output` | Output directory (overrides config) |
+| `--clean` | Clean output directory before build |
+| `--drafts` | Include draft items |
+| `--refresh-og` | Bypass OpenGraph cache and re-fetch all items |
+
+### `ssg serve`
+
+| Flag | Description |
+|---|---|
+| `-p, --port` | Port to serve on (default: 8080) |
+| `--watch` | Watch for changes and rebuild automatically |
+| `--drafts` | Include draft items |
+
+### `ssg new item`
+
+```bash
+ssg new item [--list <list>] [--type <type>] [key=value ...]
+```
+
+| Flag | Description |
+|---|---|
+| `--list` | List to add item to (defaults to root content directory) |
+| `--type` | Item type (must match a file in `items/`) |
+
+### `ssg new list`
+
+```bash
+ssg new list <name> --title <title> [flags]
+```
+
+| Flag | Description |
+|---|---|
+| `--title` | List title (required) |
+| `--types` | Comma-separated allowlist of item types |
+| `--template` | Override list page template |
+| `--card-template` | Override child card template |
+| `--sort-by` | Field to sort children by |
+| `--sort-order` | Sort order: `asc` or `desc` |
+| `--limit` | Maximum children to render (0 = unlimited) |
 
 ## Configuration (`site.yaml`)
 
 ```yaml
 title: My Site
 baseURL: http://localhost:8080
+canonicalURL: https://example.com  # used for SEO; overrides baseURL if set
 contentDir: content      # scanned recursively for items
 outputDir: public        # HTML output
 templateDir: templates   # site-specific templates
 themesDir: themes
 itemsDir: items          # item type definitions
 theme: default
+sitemap: true            # generate sitemap.xml
+ogCacheFile: og-cache.json  # OpenGraph metadata cache
 
 server:
   host: localhost
@@ -87,6 +136,7 @@ defaults:
 2. **Theme** — Theme assets are copied to `output/theme/`; partial templates (`head.html`, `foot.html`) are loaded alongside site templates.
 3. **Build** — `buildItem` is called recursively. For each item: fetch data → apply type defaults → build children → sort/limit children → render child cards → inject template vars → write output HTML.
 4. **Nav** — Root items are pre-fetched and injected into every page as `RootItems` (filtered to exclude the current page).
+5. **Enrich** — OpenGraph metadata is fetched for link items and cached in `ogCacheFile`. Use `--refresh-og` to bypass the cache.
 
 ## Template Data
 
@@ -130,7 +180,7 @@ types:
   - soundcloud
 ```
 
-The `ssg add` command uses the `fields` list to prompt the user; the `types` list filters which types are offered for that list.
+The `ssg new item` command uses the `fields` list to validate required data; the `types` list filters which types are offered for that list.
 
 ### Item filename convention
 
