@@ -5,7 +5,7 @@
   <div class="og-body">
     <p class="og-title"><a class="item-link" href="{{.url}}" target="_blank" rel="noopener noreferrer">{{$displayTitle}}</a></p>
     {{if and .og_description (ne .og_description $displayTitle) (ne .og_description .og_site_name)}}<p class="og-description">{{.og_description}}</p>{{end}}
-    {{if .tags}}<span class="tags">{{.tags}}</span>{{end}}
+    {{template "tag-links.html" .}}
   </div>
 </div>
 {{end}}

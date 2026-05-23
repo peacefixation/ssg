@@ -4,6 +4,6 @@
     <span class="title">{{.title}}</span>
   </a>
   {{if .description}}<p class="description">{{.description}}</p>{{end}}
-  {{if .tags}}<span class="tags">{{.tags}}</span>{{end}}
+  {{template "tag-links.html" .}}
 </div>
 {{end}}

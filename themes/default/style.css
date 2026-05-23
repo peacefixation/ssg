@@ -185,11 +185,6 @@ blockquote {
   transition: border-color 0.12s, box-shadow 0.12s;
 }
 
-.item:hover {
-  border-color: #93c5fd;
-  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.07);
-}
-
 .item a {
   text-decoration: none;
   color: inherit;
@@ -201,12 +196,17 @@ blockquote {
   color: var(--text);
 }
 
-.item:hover .title { color: var(--accent); }
+.item a:hover .title { color: var(--accent); }
 
 .item .tags,
 .item .artist {
   font-size: 0.8125rem;
   color: var(--muted);
+}
+
+.item a.tag:hover {
+  color: var(--accent);
+  text-decoration: underline;
 }
 
 /* === Embeds === */

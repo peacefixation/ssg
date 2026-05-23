@@ -66,28 +66,22 @@ func collectTags(items []config.ItemConfig, registry *datasource.Registry, ances
 }
 
 // extractTags reads the "tags" field from data and returns normalised tag strings.
-// It handles both a comma-separated string and a YAML list of strings.
+// Tags must be a YAML list of strings.
 func extractTags(data map[string]any) []string {
 	raw, ok := data["tags"]
 	if !ok {
 		return nil
 	}
+	items, ok := raw.([]any)
+	if !ok {
+		return nil
+	}
 	var tags []string
-	switch v := raw.(type) {
-	case string:
-		for _, t := range strings.Split(v, ",") {
-			t = strings.TrimSpace(strings.ToLower(t))
-			if t != "" {
-				tags = append(tags, t)
-			}
-		}
-	case []any:
-		for _, item := range v {
-			if s, ok := item.(string); ok {
-				s = strings.TrimSpace(strings.ToLower(s))
-				if s != "" {
-					tags = append(tags, s)
-				}
+	for _, item := range items {
+		if s, ok := item.(string); ok {
+			s = strings.TrimSpace(strings.ToLower(s))
+			if s != "" {
+				tags = append(tags, s)
 			}
 		}
 	}

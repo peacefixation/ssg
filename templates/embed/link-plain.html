@@ -1,6 +1,6 @@
 {{define "embed/link-plain.html"}}
 <div class="item link-plain">
   <a class="item-link" href="{{.url}}" target="_blank" rel="noopener noreferrer">{{.title}}</a>
-  {{if .tags}}<span class="tags">{{.tags}}</span>{{end}}
+  {{template "tag-links.html" .}}
 </div>
 {{end}}
