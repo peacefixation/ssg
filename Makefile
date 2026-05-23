@@ -1,4 +1,4 @@
-.PHONY: compile site serve watch test new-item new-list
+.PHONY: compile site serve watch test new-item new-list clean
 
 compile:
 	go build .
@@ -20,3 +20,6 @@ new-item:
 
 new-list:
 	go run . new list $(ARGS)
+
+clean:
+	rm -rf public
