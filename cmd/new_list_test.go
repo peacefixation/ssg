@@ -131,6 +131,72 @@ func TestAppendListMarkdown_NoFrontmatter(t *testing.T) {
 	}
 }
 
+// --- parent config inheritance ---
+
+func TestCreateList_InheritsParentCardTemplate(t *testing.T) {
+	dir := t.TempDir()
+	contentDir := filepath.Join(dir, "content")
+	mustMkListDir(t, contentDir, "Root")
+	parentDir := filepath.Join(contentDir, "music")
+	if err := os.MkdirAll(parentDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	parentYAML := "title: Music\ncardTemplate: music-card.html\ntypes:\n  - soundcloud\n  - youtube\n"
+	if err := os.WriteFile(filepath.Join(parentDir, "list.yaml"), []byte(parentYAML), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := createList(testSiteConfig(contentDir), "music/artist", newListConfig{Title: "Artist"}); err != nil {
+		t.Fatalf("createList: %v", err)
+	}
+
+	data, err := os.ReadFile(filepath.Join(contentDir, "music", "artist", "list.yaml"))
+	if err != nil {
+		t.Fatalf("reading list.yaml: %v", err)
+	}
+	var got newListConfig
+	if err := yaml.Unmarshal(data, &got); err != nil {
+		t.Fatalf("unmarshalling: %v", err)
+	}
+	if got.CardTemplate != "music-card.html" {
+		t.Errorf("cardTemplate: want music-card.html, got %q", got.CardTemplate)
+	}
+	if len(got.Types) != 2 || got.Types[0] != "soundcloud" || got.Types[1] != "youtube" {
+		t.Errorf("types: want [soundcloud youtube], got %v", got.Types)
+	}
+}
+
+func TestCreateList_ExplicitFlagOverridesParent(t *testing.T) {
+	dir := t.TempDir()
+	contentDir := filepath.Join(dir, "content")
+	mustMkListDir(t, contentDir, "Root")
+	parentDir := filepath.Join(contentDir, "music")
+	if err := os.MkdirAll(parentDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	parentYAML := "title: Music\ncardTemplate: music-card.html\n"
+	if err := os.WriteFile(filepath.Join(parentDir, "list.yaml"), []byte(parentYAML), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	lc := newListConfig{Title: "Artist", CardTemplate: "custom-card.html"}
+	if err := createList(testSiteConfig(contentDir), "music/artist", lc); err != nil {
+		t.Fatalf("createList: %v", err)
+	}
+
+	data, err := os.ReadFile(filepath.Join(contentDir, "music", "artist", "list.yaml"))
+	if err != nil {
+		t.Fatalf("reading list.yaml: %v", err)
+	}
+	var got newListConfig
+	if err := yaml.Unmarshal(data, &got); err != nil {
+		t.Fatalf("unmarshalling: %v", err)
+	}
+	if got.CardTemplate != "custom-card.html" {
+		t.Errorf("cardTemplate: want custom-card.html, got %q", got.CardTemplate)
+	}
+}
+
 // --- createList with file item parent ---
 
 func testSiteConfig(contentDir string) *config.SiteConfig {

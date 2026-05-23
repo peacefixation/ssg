@@ -102,6 +102,10 @@ func createList(cfg *config.SiteConfig, name string, lc newListConfig) error {
 		return createFileItemSubList(destDir, parentDir, listName, itemPath, lc)
 	}
 
+	if parent, err := readListConfig(filepath.Join(parentDir, "list.yaml")); err == nil {
+		lc = mergeParentConfig(lc, parent)
+	}
+
 	if err := os.Mkdir(destDir, 0755); err != nil {
 		return fmt.Errorf("creating directory: %w", err)
 	}
@@ -152,6 +156,40 @@ type newListConfig struct {
 	SortBy       string   `yaml:"sortBy,omitempty"`
 	SortOrder    string   `yaml:"sortOrder,omitempty"`
 	Limit        int      `yaml:"limit,omitempty"`
+}
+
+func readListConfig(path string) (newListConfig, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return newListConfig{}, err
+	}
+	var lc newListConfig
+	if err := yaml.Unmarshal(data, &lc); err != nil {
+		return newListConfig{}, err
+	}
+	return lc, nil
+}
+
+func mergeParentConfig(lc, parent newListConfig) newListConfig {
+	if lc.CardTemplate == "" {
+		lc.CardTemplate = parent.CardTemplate
+	}
+	if lc.Template == "" {
+		lc.Template = parent.Template
+	}
+	if lc.SortBy == "" {
+		lc.SortBy = parent.SortBy
+	}
+	if lc.SortOrder == "" {
+		lc.SortOrder = parent.SortOrder
+	}
+	if lc.Limit == 0 {
+		lc.Limit = parent.Limit
+	}
+	if lc.Types == nil {
+		lc.Types = parent.Types
+	}
+	return lc
 }
 
 // --- list discovery ---
