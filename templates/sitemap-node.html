@@ -1,10 +1,19 @@
 {{define "sitemap-node.html"}}
 <li>
-  {{if .URL}}<a href="{{.URL}}" target="_blank" rel="noopener noreferrer">{{if .Icon}}{{render (printf "icon-%s.html" .Icon) .}}{{end}}{{.Title}}</a>{{else}}<a href="/{{.OutputPath}}">{{if .Icon}}{{render (printf "icon-%s.html" .Icon) .}}{{end}}{{.Title}}</a>{{end}}
   {{if .Children}}
-  <ul>
-    {{range .Children}}{{template "sitemap-node.html" .}}{{end}}
-  </ul>
+  <details data-path="{{.OutputPath}}">
+    <summary>
+      {{if .Icon}}{{render (printf "icon-%s.html" .Icon) .}}{{end}}
+      {{if .OutputPath}}<a href="/{{.OutputPath}}">{{.Title}}</a>{{else}}<span>{{.Title}}</span>{{end}}
+    </summary>
+    <ul>
+      {{range .Children}}{{template "sitemap-node.html" .}}{{end}}
+    </ul>
+  </details>
+  {{else}}
+  <a href="{{if .URL}}{{.URL}}{{else}}/{{.OutputPath}}{{end}}"{{if .URL}} target="_blank" rel="noopener noreferrer"{{end}}>
+    {{if .Icon}}{{render (printf "icon-%s.html" .Icon) .}}{{end}}{{.Title}}
+  </a>
   {{end}}
 </li>
 {{end}}

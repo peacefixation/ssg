@@ -1,7 +1,9 @@
 {{define "sitemap.html"}}
 <!DOCTYPE html>
 <html lang="en">
-<head>{{template "head.html" .}}</head>
+<head>{{template "head.html" .}}
+<link rel="stylesheet" href="/theme/sitemap.css">
+</head>
 <body>
   {{template "nav.html" .}}
   {{if .title}}<h1>{{.title}}</h1>{{end}}
@@ -11,6 +13,18 @@
   </ul>
   {{end}}
   {{template "foot.html" .}}
+<script>
+// Persist open/closed state of sitemap nodes in localStorage, keyed by path.
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.sitemap details[data-path]').forEach(function (el) {
+    var key = 'sitemap:' + el.dataset.path;
+    if (localStorage.getItem(key) === 'open') el.open = true;
+    el.addEventListener('toggle', function () {
+      localStorage.setItem(key, el.open ? 'open' : 'closed');
+    });
+  });
+});
+</script>
 </body>
 </html>
 {{end}}

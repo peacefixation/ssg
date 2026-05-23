@@ -1,0 +1,12 @@
+.sitemap ul { list-style: none; padding-left: 1.25rem; margin: 0; }
+.sitemap > ul { padding-left: 0; }
+.sitemap li { line-height: 1.8; }
+.sitemap details > summary { list-style: none; display: flex; align-items: center; gap: 0.4rem; cursor: pointer; padding: 0.1rem 0.25rem; border-radius: 4px; user-select: none; }
+.sitemap details > summary::-webkit-details-marker { display: none; }
+.sitemap details > summary::before { content: "▶"; font-size: 0.6em; width: 1em; transition: transform 0.15s; flex-shrink: 0; color: var(--muted); }
+.sitemap details[open] > summary::before { transform: rotate(90deg); }
+.sitemap details > summary:hover { background: var(--surface); }
+.sitemap summary a, .sitemap li > a { color: var(--text); text-decoration: none; }
+.sitemap li > a { display: flex; align-items: center; gap: 0.4rem; padding: 0.1rem 0.25rem; border-radius: 4px; }
+.sitemap li > a:hover, .sitemap summary a:hover { color: var(--accent); }
+.sitemap li > a:hover { background: var(--surface); }
