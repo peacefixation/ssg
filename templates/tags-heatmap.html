@@ -1,0 +1,13 @@
+{{define "tags-heatmap.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>{{template "head.html" .}}</head>
+<body>
+  {{template "nav.html" .}}
+  <div class="tags-heatmap">
+    {{range .List}}{{.}}{{end}}
+  </div>
+  {{template "foot.html" .}}
+</body>
+</html>
+{{end}}

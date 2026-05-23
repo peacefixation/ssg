@@ -1,0 +1,13 @@
+{{define "tags.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>{{template "head.html" .}}</head>
+<body>
+  {{template "nav.html" .}}
+  <ul class="tags-list">
+    {{range .List}}{{.}}{{end}}
+  </ul>
+  {{template "foot.html" .}}
+</body>
+</html>
+{{end}}

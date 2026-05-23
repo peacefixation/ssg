@@ -1,0 +1,4 @@
+{{define "tag-heatmap-card.html"}}
+<a class="tag-heatmap-item" href="/{{.outputPath}}"
+   style="--heat: {{printf "%.2f" .weight}}">{{.title}} <span class="count">{{.count}}</span></a>
+{{end}}

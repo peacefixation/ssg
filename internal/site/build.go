@@ -68,6 +68,12 @@ func Build(cfg *config.SiteConfig, registry *datasource.Registry, clean bool) (i
 		return 0, err
 	}
 
+	if cfg.Tags.Enabled {
+		tagMap := collectTags(rootItems, registry, nil)
+		tagsItem := buildTagsTree(tagMap, cfg, registry)
+		rootItems = append(rootItems, tagsItem)
+	}
+
 	// Pre-fetch nav data for all root items so every page can render global nav.
 	// The home page (index.html) is excluded — the site title serves as the home link.
 	allNavItems := buildNavItems(rootItems, registry)
@@ -288,7 +294,7 @@ func buildItem(
 	siteMap []config.SiteMapNode,
 	ogEnricher *enricher.OGEnricher,
 ) (int, error) {
-	ds, err := registry.New(itemCfg.DataSource)
+	ds, err := getDS(itemCfg, registry)
 	if err != nil {
 		return 0, fmt.Errorf("creating datasource: %w", err)
 	}
@@ -414,7 +420,7 @@ func buildChildren(
 	// Fetch child data for sorting and card rendering.
 	entries := make([]childEntry, 0, len(itemCfg.Children))
 	for _, childCfg := range itemCfg.Children {
-		ds, err := registry.New(childCfg.DataSource)
+		ds, err := getDS(childCfg, registry)
 		if err != nil {
 			return nil, 0, fmt.Errorf("creating datasource for child %q: %w", childCfg.Name, err)
 		}
@@ -574,6 +580,18 @@ func first(vals ...string) string {
 		}
 	}
 	return ""
+}
+
+// getDS returns the datasource for itemCfg. If DataSourceOverride is set it
+// takes precedence over the registry, avoiding an import cycle by asserting
+// the stored value to datasource.DataSource.
+func getDS(itemCfg config.ItemConfig, registry *datasource.Registry) (datasource.DataSource, error) {
+	if itemCfg.DataSourceOverride != nil {
+		if ds, ok := itemCfg.DataSourceOverride.(datasource.DataSource); ok {
+			return ds, nil
+		}
+	}
+	return registry.New(itemCfg.DataSource)
 }
 
 func writeItem(outputDir string, item *Item, r *renderer.Renderer) error {

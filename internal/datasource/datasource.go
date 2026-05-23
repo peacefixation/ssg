@@ -50,5 +50,8 @@ func DefaultRegistry() *Registry {
 	r.Register(config.APIType, func(cfg config.DataSourceConfig) (DataSource, error) {
 		return NewAPISource(cfg)
 	})
+	r.Register(config.MapType, func(cfg config.DataSourceConfig) (DataSource, error) {
+		return NewMapSource(cfg.Data), nil
+	})
 	return r
 }

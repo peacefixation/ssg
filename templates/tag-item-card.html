@@ -1,0 +1,12 @@
+{{define "tag-item-card.html"}}
+<div class="item">
+  {{if .sourcePath}}
+  <span class="source-path">
+    {{range .sourcePath}}<a href="/{{.outputPath}}">{{.title}}</a> / {{end}}
+  </span>
+  {{end}}
+  <a href="/{{.outputPath}}">
+    <span class="title">{{.title}}</span>
+  </a>
+</div>
+{{end}}

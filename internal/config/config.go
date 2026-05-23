@@ -8,21 +8,22 @@ import (
 
 // SiteConfig is the top-level configuration for an SSG site.
 type SiteConfig struct {
-	Title       string       `mapstructure:"title"`
-	BaseURL      string       `mapstructure:"baseURL"`
-	CanonicalURL string       `mapstructure:"canonicalURL"`
-	ContentDir  string       `mapstructure:"contentDir"`
-	OutputDir   string       `mapstructure:"outputDir"`
-	TemplateDir string       `mapstructure:"templateDir"`
-	ThemesDir   string       `mapstructure:"themesDir"`
-	ItemsDir    string       `mapstructure:"itemsDir"`
-	Theme       string       `mapstructure:"theme"`
-	Defaults    Defaults     `mapstructure:"defaults"`
-	Server      ServerConfig `mapstructure:"server"`
-	Drafts      bool         `mapstructure:"-"`
-	SiteMap     bool         `mapstructure:"sitemap"`
-	OGCacheFile string       `mapstructure:"ogCacheFile"`
-	RefreshOG   bool         `mapstructure:"-"`
+	Title        string      `mapstructure:"title"`
+	BaseURL      string      `mapstructure:"baseURL"`
+	CanonicalURL string      `mapstructure:"canonicalURL"`
+	ContentDir   string      `mapstructure:"contentDir"`
+	OutputDir    string      `mapstructure:"outputDir"`
+	TemplateDir  string      `mapstructure:"templateDir"`
+	ThemesDir    string      `mapstructure:"themesDir"`
+	ItemsDir     string      `mapstructure:"itemsDir"`
+	Theme        string      `mapstructure:"theme"`
+	Defaults     Defaults    `mapstructure:"defaults"`
+	Server       ServerConfig `mapstructure:"server"`
+	Drafts       bool        `mapstructure:"-"`
+	SiteMap      bool        `mapstructure:"sitemap"`
+	OGCacheFile  string      `mapstructure:"ogCacheFile"`
+	RefreshOG    bool        `mapstructure:"-"`
+	Tags         TagsConfig  `mapstructure:"tags"`
 }
 
 // SiteMapNode is one node in the site map tree.
@@ -56,15 +57,26 @@ type ListDefaults struct {
 // ItemConfig configures a single item (file or directory).
 // Directory items carry Children discovered by scanning; file items do not.
 type ItemConfig struct {
-	Name         string           `mapstructure:"name"`
-	Template     string           `mapstructure:"template"`
-	CardTemplate string           `mapstructure:"cardTemplate"`
-	OutputPath   string           `mapstructure:"outputPath"`
-	DataSource   DataSourceConfig `mapstructure:"dataSource"`
-	Children     []ItemConfig
-	SortBy       string `mapstructure:"sortBy"`
-	SortOrder    string `mapstructure:"sortOrder"`
-	Limit        int    `mapstructure:"limit"`
+	Name               string           `mapstructure:"name"`
+	Template           string           `mapstructure:"template"`
+	CardTemplate       string           `mapstructure:"cardTemplate"`
+	OutputPath         string           `mapstructure:"outputPath"`
+	DataSource         DataSourceConfig `mapstructure:"dataSource"`
+	DataSourceOverride any              `mapstructure:"-"` // holds a datasource.DataSource; avoids import cycle
+	Children           []ItemConfig
+	SortBy             string `mapstructure:"sortBy"`
+	SortOrder          string `mapstructure:"sortOrder"`
+	Limit              int    `mapstructure:"limit"`
+}
+
+// TagsConfig controls the synthesized tags section of the site.
+type TagsConfig struct {
+	Enabled          bool   `mapstructure:"enabled"`
+	Style            string `mapstructure:"style"`            // "list" | "cloud" | "heatmap"; sets default template/cardTemplate
+	Template         string `mapstructure:"template"`         // explicit override; takes priority over Style
+	CardTemplate     string `mapstructure:"cardTemplate"`     // explicit override; takes priority over Style
+	TagTemplate      string `mapstructure:"tagTemplate"`      // default: "tag.html"
+	ItemCardTemplate string `mapstructure:"itemCardTemplate"` // default: "tag-item-card.html"
 }
 
 // DataSourceType identifies the kind of datasource driver to use.
@@ -73,6 +85,7 @@ type DataSourceType string
 const (
 	FileType DataSourceType = "file"
 	APIType  DataSourceType = "api"
+	MapType  DataSourceType = "map"
 )
 
 // DataSourceConfig describes where and how to load data.
@@ -82,6 +95,7 @@ type DataSourceConfig struct {
 	Glob    string            `mapstructure:"glob"`
 	Headers map[string]string `mapstructure:"headers"`
 	Params  map[string]string `mapstructure:"params"`
+	Data    map[string]any    `mapstructure:"-"` // in-memory only; used by MapType
 }
 
 // ServerConfig holds development server settings.

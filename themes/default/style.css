@@ -249,3 +249,63 @@ blockquote {
   font-size: 0.875rem;
   color: var(--muted);
 }
+
+/* === Tags index styles === */
+.tags-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: baseline;
+  padding-block: 0 2.5rem;
+}
+
+.tag-cloud-item {
+  text-decoration: none;
+  color: var(--accent);
+  line-height: 1.4;
+}
+
+.tag-cloud-item:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+.tags-heatmap {
+  /* Palette: override these to change the heatmap colour range.
+     --heat-lightness-lo/hi: oklch lightness at weight 0 and 1 (0–1).
+     --heat-chroma-lo/hi:    oklch chroma at weight 0 and 1 (0–0.4 typical).
+     --heat-hue-lo/hi:       oklch hue angle at weight 0 and 1 (0–360). */
+  --heat-lightness-lo: 0.92;
+  --heat-lightness-hi: 0.88;
+  --heat-chroma-lo:    0.06;
+  --heat-chroma-hi:    0.10;
+  --heat-hue-lo:       100;  /* yellow */
+  --heat-hue-hi:       145;  /* green */
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding-block: 0 2.5rem;
+}
+
+.tag-heatmap-item {
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  background-color: oklch(
+    calc(var(--heat-lightness-lo) + var(--heat, 0) * (var(--heat-lightness-hi) - var(--heat-lightness-lo)))
+    calc(var(--heat-chroma-lo)    + var(--heat, 0) * (var(--heat-chroma-hi)    - var(--heat-chroma-lo)))
+    calc(var(--heat-hue-lo)       + var(--heat, 0) * (var(--heat-hue-hi)       - var(--heat-hue-lo)))
+  );
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.tag-heatmap-item:hover {
+  text-decoration: underline;
+}
+
+.tag-heatmap-item .count {
+  font-size: 0.75em;
+  opacity: 0.8;
+}

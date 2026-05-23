@@ -1,0 +1,4 @@
+{{define "tag-cloud-card.html"}}
+<a class="tag-cloud-item" href="/{{.outputPath}}"
+   style="font-size: calc(0.85rem + {{printf "%.2f" .weight}}rem)">{{.title}}</a>
+{{end}}
