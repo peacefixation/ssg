@@ -1,0 +1,15 @@
+{{define "music-card.html"}}
+<div class="item">
+  {{if .embed}}
+  <div class="embed-meta">
+    <a href="/{{.outputPath}}"><span class="title">{{.title}}</span></a>
+    {{if .artist}}<span class="artist">{{.artist}}</span>{{end}}
+  </div>
+    {{render (printf "embed/%s.html" .embed) .}}
+  {{else}}
+    <a href="/{{.outputPath}}">
+      <span class="title">{{.title}}</span>
+    </a>
+  {{end}}
+</div>
+{{end}}

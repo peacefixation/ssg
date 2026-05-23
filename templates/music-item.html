@@ -1,15 +1,17 @@
 {{define "music-item.html"}}
-<div class="item">
+<!DOCTYPE html>
+<html lang="en">
+<head>{{template "head.html" .}}</head>
+<body>
+  {{template "nav.html" .}}
   {{if .embed}}
-  <div class="embed-meta">
-    <a href="/{{.outputPath}}"><span class="title">{{.title}}</span></a>
-    {{if .artist}}<span class="artist">{{.artist}}</span>{{end}}
-  </div>
     {{render (printf "embed/%s.html" .embed) .}}
   {{else}}
-    <a href="/{{.outputPath}}">
-      <span class="title">{{.title}}</span>
-    </a>
+    {{if .title}}<h1>{{.title}}</h1>{{end}}
+    {{.body}}
   {{end}}
-</div>
+  {{range .List}}{{.}}{{end}}
+  {{template "foot.html" .}}
+</body>
+</html>
 {{end}}

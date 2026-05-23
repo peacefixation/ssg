@@ -21,10 +21,10 @@ func buildTestSite(t *testing.T, dir string) {
 		ThemesDir:   filepath.Join(dir, "themes"),
 		ItemsDir:    filepath.Join(dir, "items"),
 		Defaults: config.Defaults{
-			Page: config.PageDefaults{Template: "page.html"},
+			Page: config.PageDefaults{Template: "item.html"},
 			List: config.ListDefaults{
 				Template:     "list.html",
-				CardTemplate: "item.html",
+				CardTemplate: "card.html",
 			},
 		},
 	}
@@ -58,12 +58,12 @@ func TestBuild_FileItemWithSubList(t *testing.T) {
 	dir := t.TempDir()
 
 	// Minimal templates — no head.html/foot.html required.
-	mustWriteFile(t, filepath.Join(dir, "templates", "page.html"),
-		`{{define "page.html"}}{{.title}}{{end}}`)
-	mustWriteFile(t, filepath.Join(dir, "templates", "list.html"),
-		`{{define "list.html"}}{{.title}}{{range .List}}{{.}}{{end}}{{end}}`)
 	mustWriteFile(t, filepath.Join(dir, "templates", "item.html"),
 		`{{define "item.html"}}{{.title}}{{end}}`)
+	mustWriteFile(t, filepath.Join(dir, "templates", "list.html"),
+		`{{define "list.html"}}{{.title}}{{range .List}}{{.}}{{end}}{{end}}`)
+	mustWriteFile(t, filepath.Join(dir, "templates", "card.html"),
+		`{{define "card.html"}}{{.title}}{{end}}`)
 
 	// File item declaring one sub-list.
 	mustWriteFile(t, filepath.Join(dir, "content", "20260418T120000Z-lsg.yaml"),
@@ -86,12 +86,12 @@ func TestBuild_FileItemWithSubList(t *testing.T) {
 func TestBuild_FileItemWithSubList_DeepNesting(t *testing.T) {
 	dir := t.TempDir()
 
-	mustWriteFile(t, filepath.Join(dir, "templates", "page.html"),
-		`{{define "page.html"}}{{.title}}{{end}}`)
-	mustWriteFile(t, filepath.Join(dir, "templates", "list.html"),
-		`{{define "list.html"}}{{.title}}{{range .List}}{{.}}{{end}}{{end}}`)
 	mustWriteFile(t, filepath.Join(dir, "templates", "item.html"),
 		`{{define "item.html"}}{{.title}}{{end}}`)
+	mustWriteFile(t, filepath.Join(dir, "templates", "list.html"),
+		`{{define "list.html"}}{{.title}}{{range .List}}{{.}}{{end}}{{end}}`)
+	mustWriteFile(t, filepath.Join(dir, "templates", "card.html"),
+		`{{define "card.html"}}{{.title}}{{end}}`)
 
 	// Top-level file item.
 	mustWriteFile(t, filepath.Join(dir, "content", "20260418T120000Z-lsg.yaml"),
@@ -122,12 +122,12 @@ func TestBuild_FileItemWithSubList_DeepNesting(t *testing.T) {
 func TestBuild_FileItemWithNoSubListDir_Skipped(t *testing.T) {
 	dir := t.TempDir()
 
-	mustWriteFile(t, filepath.Join(dir, "templates", "page.html"),
-		`{{define "page.html"}}{{.title}}{{end}}`)
-	mustWriteFile(t, filepath.Join(dir, "templates", "list.html"),
-		`{{define "list.html"}}{{.title}}{{end}}`)
 	mustWriteFile(t, filepath.Join(dir, "templates", "item.html"),
 		`{{define "item.html"}}{{.title}}{{end}}`)
+	mustWriteFile(t, filepath.Join(dir, "templates", "list.html"),
+		`{{define "list.html"}}{{.title}}{{end}}`)
+	mustWriteFile(t, filepath.Join(dir, "templates", "card.html"),
+		`{{define "card.html"}}{{.title}}{{end}}`)
 
 	// File item declares "live" but the sibling directory does not exist.
 	mustWriteFile(t, filepath.Join(dir, "content", "20260418T120000Z-lsg.yaml"),

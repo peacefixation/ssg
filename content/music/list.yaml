@@ -1,5 +1,5 @@
 title: Music
-cardTemplate: music-item.html
+cardTemplate: music-card.html
 types:
   - soundcloud
   - youtube

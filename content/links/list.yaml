@@ -1,5 +1,5 @@
 title: Links
-cardTemplate: link-item.html
+cardTemplate: link-card.html
 types:
   - link-plain
   - link-opengraph

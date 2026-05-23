@@ -15,10 +15,10 @@ sitemap: true
 
 defaults:
   page:
-    template: page.html
+    template: item.html
   list:
     template: list.html
-    cardTemplate: item.html
+    cardTemplate: card.html
     sortBy: date
     sortOrder: desc
 
