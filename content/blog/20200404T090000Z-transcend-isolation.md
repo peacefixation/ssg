@@ -2,7 +2,8 @@
 title: "Transcend Isolation: a DJ mix"
 date: 2020-04-04T19:00:00+10:00
 description: Alone is just a state of mind.
-tags: [music]
+tags:
+  - music
 draft: false
 ---
 

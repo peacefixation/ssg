@@ -2,7 +2,9 @@
 title: Learn you more Haskell
 date: 2016-05-26T12:51:12+11:00
 description: More Haskell exercises.
-tags: [haskell]
+tags:
+  - haskell
+  - programming
 draft: false
 ---
 

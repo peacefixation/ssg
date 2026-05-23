@@ -1,7 +1,8 @@
 ---
 title: "Attempted Vortex: a DJ mix"
 date: 2020-05-12T17:00:00+10:00
-tags: [music]
+tags:
+  - music
 description: Trying to emulate John Digweed.
 draft: false
 ---

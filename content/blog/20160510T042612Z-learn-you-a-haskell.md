@@ -1,7 +1,9 @@
 ---
 title: Learn you a Haskell
 date: 2016-05-10T15:26:12+11:00
-tags: [haskell]
+tags:
+  - haskell
+  - programming
 description: My first foray into Haskell programming.
 draft: false
 ---

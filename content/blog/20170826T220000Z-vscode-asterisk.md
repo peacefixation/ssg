@@ -1,7 +1,10 @@
 ---
 title: Asterisk syntax highlighting extension for VS Code
 date: 2017-08-27T08:00:00+00:00
-tags: [asterisk, vscode]
+tags:
+  - asterisk
+  - programming
+  - vscode
 description: Creating a Visual Studio Code extension to provide syntax highlighting for Asterisk dialplan code.
 draft: false
 ---

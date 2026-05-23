@@ -2,7 +2,9 @@
 title: "Learning Go by implementing cat"
 date: 2020-07-21T21:37:50+10:00
 description: "A simple implementation of the core-utils cat command in Go."
-tags: [go]
+tags:
+  - go
+  - programming
 draft: false
 ---
 

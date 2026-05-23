@@ -1,7 +1,10 @@
 ---
 title: "Asterisk syntax highlighting extension for Brackets"
 date: 2016-03-31T12:46:37+11:00
-tags: [asterisk, brackets]
+tags:
+  - asterisk
+  - brackets
+  - programming
 description: Creating a Brackets extension to provide syntax highlighting for Asterisk dialplan code.
 draft: false
 ---

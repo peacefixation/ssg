@@ -1,7 +1,9 @@
 ---
 title: A Github Gists extension for Firefox
 date: 2019-02-06T19:49:45+11:00
-tags: [firefox, github]
+tags:
+  - firefox
+  - github
 description: Creating a Firefox extension to list and search your Github Gists.
 draft: false
 ---

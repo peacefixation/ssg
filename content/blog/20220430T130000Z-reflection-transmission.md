@@ -1,7 +1,8 @@
 ---
 title: "Fits of reflection and transmission: a DJ mix"
 date: 2022-05-01T00:00:00+10:00
-tags: [music]
+tags:
+  - music
 description: Warm, nostalgic house music.
 draft: false
 ---

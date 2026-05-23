@@ -2,7 +2,9 @@
 title: Clean SQL embedded in source files with Vim
 date: 2017-09-11T19:41:00+10:00
 description: A simple Vim exercise.
-tags: [vim]
+tags:
+  - programming
+  - vim
 draft: false
 ---
 
