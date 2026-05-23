@@ -24,4 +24,4 @@ defaults:
 
 tags:
   enabled: true
-  style: heatmap # list, cloud, or heatmap
+  style: cloud

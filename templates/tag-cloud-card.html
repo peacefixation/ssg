@@ -1,4 +1,8 @@
 {{define "tag-cloud-card.html"}}
-<a class="tag-cloud-item" href="/{{.outputPath}}"
-   style="font-size: calc(0.85rem + {{printf "%.2f" .weight}}rem)">{{.title}}</a>
+<span class="tag-datum"
+      data-text="{{.title}}"
+      data-weight="{{printf "%.4f" .weight}}"
+      data-count="{{.count}}"
+      data-href="/{{.outputPath}}"
+      aria-hidden="true"></span>
 {{end}}

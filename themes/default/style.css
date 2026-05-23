@@ -251,24 +251,26 @@ blockquote {
 }
 
 /* === Tags index styles === */
-.tags-cloud {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: baseline;
+.tags-cloud-container {
+  --cloud-hue-lo:    200;
+  --cloud-hue-hi:    260;
+  --cloud-lightness: 0.50;
+  --cloud-chroma:    0.18;
+
+  width: 100%;
   padding-block: 0 2.5rem;
 }
 
-.tag-cloud-item {
-  text-decoration: none;
-  color: var(--accent);
-  line-height: 1.4;
+.tag-datum { display: none; }
+
+.tags-cloud-container svg { display: block; }
+
+.tags-cloud-container svg text {
+  cursor: pointer;
+  transition: opacity 0.12s;
 }
 
-.tag-cloud-item:hover {
-  color: var(--accent-hover);
-  text-decoration: underline;
-}
+.tags-cloud-container svg a:hover text { opacity: 0.7; }
 
 .tags-heatmap {
   /* Palette: override these to change the heatmap colour range.
