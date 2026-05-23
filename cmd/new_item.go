@@ -16,23 +16,24 @@ var (
 )
 
 var newItemCmd = &cobra.Command{
-	Use:   "item --list <list> --type <type> [key=value ...]",
+	Use:   "item [--list <list>] [--type <type>] [key=value ...]",
 	Short: "Add a new item to a list",
 	Long: `Add a new item to a list.
 
 Fields are supplied as key=value arguments after the flags. Required fields
 are defined by the item type. Missing required fields produce an error.
 
+Omit --list to add the item directly to the root content directory.
+
 Example:
-  ssg new item --list music --type youtube url=https://youtu.be/xyz title="My Song"`,
+  ssg new item --list music --type youtube url=https://youtu.be/xyz title="My Song"
+  ssg new item --type page title="Home"`,
 	RunE: runNewItem,
 }
 
 func init() {
-	newItemCmd.Flags().StringVar(&newItemList, "list", "", "list to add the item to (required)")
-	newItemCmd.Flags().StringVar(&newItemType, "type", "", "item type (required)")
-	_ = newItemCmd.MarkFlagRequired("list")
-	_ = newItemCmd.MarkFlagRequired("type")
+	newItemCmd.Flags().StringVar(&newItemList, "list", "", "list to add the item to (defaults to root content directory)")
+	newItemCmd.Flags().StringVar(&newItemType, "type", "", "item type")
 	newCmd.AddCommand(newItemCmd)
 }
 
@@ -45,23 +46,33 @@ func runNewItem(cmd *cobra.Command, args []string) error {
 }
 
 func createItem(cfg *config.SiteConfig, listName, typeName string, data map[string]string) error {
-	listMeta, err := validateList(cfg.ContentDir, listName)
-	if err != nil {
-		return err
-	}
-	if err := validateType(listMeta, typeName, listName); err != nil {
-		return err
-	}
-	it, err := resolveItemType(cfg.ItemsDir, typeName)
-	if err != nil {
-		return err
-	}
-	if err := checkRequiredFields(it, data); err != nil {
-		return err
+	var dir string
+	if listName == "" {
+		dir = cfg.ContentDir
+	} else {
+		listMeta, err := validateList(cfg.ContentDir, listName)
+		if err != nil {
+			return err
+		}
+		if err := validateType(listMeta, typeName, listName); err != nil {
+			return err
+		}
+		dir = filepath.Join(cfg.ContentDir, listName)
 	}
 
-	dir := filepath.Join(cfg.ContentDir, listName)
-	if it.Format == "markdown" {
+	format := "yaml"
+	if typeName != "" {
+		it, err := resolveItemType(cfg.ItemsDir, typeName)
+		if err != nil {
+			return err
+		}
+		if err := checkRequiredFields(it, data); err != nil {
+			return err
+		}
+		format = it.Format
+	}
+
+	if format == "markdown" {
 		return writeMarkdownItem(dir, typeName, data)
 	}
 	return writeYAMLItem(dir, typeName, data)
@@ -69,7 +80,9 @@ func createItem(cfg *config.SiteConfig, listName, typeName string, data map[stri
 
 func writeYAMLItem(dir, typeName string, data map[string]string) error {
 	item := make(map[string]any, len(data)+1)
-	item["type"] = typeName
+	if typeName != "" {
+		item["type"] = typeName
+	}
 	for k, v := range data {
 		item[k] = v
 	}
