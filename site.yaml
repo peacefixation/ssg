@@ -3,6 +3,7 @@ baseURL: http://localhost:8080
 canonicalURL: https://peacefixation.github.io
 contentDir: content
 outputDir: public
+staticDir: static
 templateDir: templates
 themesDir: themes
 theme: default

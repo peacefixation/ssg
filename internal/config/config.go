@@ -13,6 +13,7 @@ type SiteConfig struct {
 	CanonicalURL string      `mapstructure:"canonicalURL"`
 	ContentDir   string      `mapstructure:"contentDir"`
 	OutputDir    string      `mapstructure:"outputDir"`
+	StaticDir    string      `mapstructure:"staticDir"`
 	TemplateDir  string      `mapstructure:"templateDir"`
 	ThemesDir    string      `mapstructure:"themesDir"`
 	ItemsDir     string      `mapstructure:"itemsDir"`
@@ -120,6 +121,7 @@ func Load(path string) (*SiteConfig, error) {
 
 	viper.SetDefault("contentDir", "content")
 	viper.SetDefault("outputDir", "public")
+	viper.SetDefault("staticDir", "static")
 	viper.SetDefault("templateDir", "templates")
 	viper.SetDefault("themesDir", "themes")
 	viper.SetDefault("itemsDir", "items")

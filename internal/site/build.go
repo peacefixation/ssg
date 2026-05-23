@@ -3,6 +3,8 @@ package site
 import (
 	"fmt"
 	"html/template"
+	"io"
+	"io/fs"
 	"log"
 	"maps"
 	"os"
@@ -55,6 +57,12 @@ func Build(cfg *config.SiteConfig, registry *datasource.Registry, clean bool) (i
 	if cfg.Theme != "" {
 		if err := theme.CopyAssets(filepath.Join(cfg.ThemesDir, cfg.Theme), cfg.OutputDir); err != nil {
 			return 0, fmt.Errorf("copying theme assets: %w", err)
+		}
+	}
+
+	if cfg.StaticDir != "" {
+		if err := copyStaticDir(cfg.StaticDir, cfg.OutputDir); err != nil {
+			return 0, fmt.Errorf("copying static assets: %w", err)
 		}
 	}
 
@@ -644,6 +652,47 @@ func first(vals ...string) string {
 		}
 	}
 	return ""
+}
+
+// copyStaticDir copies all files from src into outputDir/static/, preserving
+// directory structure. Skips silently if src does not exist.
+func copyStaticDir(src, outputDir string) error {
+	if _, err := os.Stat(src); os.IsNotExist(err) {
+		return nil
+	}
+	destRoot := filepath.Join(outputDir, "static")
+	return filepath.WalkDir(src, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		rel, err := filepath.Rel(src, path)
+		if err != nil {
+			return err
+		}
+		dest := filepath.Join(destRoot, rel)
+		if d.IsDir() {
+			return os.MkdirAll(dest, 0755)
+		}
+		return copyFile(path, dest)
+	})
+}
+
+func copyFile(src, dest string) error {
+	if err := os.MkdirAll(filepath.Dir(dest), 0755); err != nil {
+		return err
+	}
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+	out, err := os.Create(dest)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+	_, err = io.Copy(out, in)
+	return err
 }
 
 // getDS returns the datasource for itemCfg. If DataSourceOverride is set it
