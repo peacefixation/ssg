@@ -1,6 +1,7 @@
 name: Plain Link
 defaults:
   embed: link-plain
+  externalLink: true
 fields:
   - name: url
     required: true

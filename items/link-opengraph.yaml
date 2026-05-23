@@ -2,6 +2,7 @@ name: OpenGraph Link
 defaults:
   embed: link-opengraph
   enrich: opengraph
+  externalLink: true
 fields:
   - name: url
     required: true

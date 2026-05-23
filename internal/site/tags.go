@@ -9,10 +9,11 @@ import (
 	"github.com/peacefixation/ssg/internal/datasource"
 )
 
-// taggedItem pairs an ItemConfig with the ordered ancestor list chain leading to it
-// (outermost first), captured at collection time.
+// taggedItem pairs an ItemConfig and its fetched data with the ordered ancestor
+// list chain leading to it (outermost first), captured at collection time.
 type taggedItem struct {
 	config    config.ItemConfig
+	data      map[string]any
 	ancestors []map[string]any // [{title, outputPath}, ...]
 }
 
@@ -57,6 +58,7 @@ func collectTags(items []config.ItemConfig, registry *datasource.Registry, ances
 			for _, tag := range extractTags(data) {
 				result[tag] = append(result[tag], taggedItem{
 					config:    item,
+					data:      data,
 					ancestors: ancestors,
 				})
 			}
@@ -90,7 +92,7 @@ func extractTags(data map[string]any) []string {
 
 // styleTemplates maps a style name to its default [template, cardTemplate] pair.
 var styleTemplates = map[string][2]string{
-	"list":    {"tags-list.html", "tag-list-card.html"},
+	"list":    {"tags.html", "tag-card.html"},
 	"cloud":   {"tags-cloud.html", "tag-cloud-card.html"},
 	"heatmap": {"tags-heatmap.html", "tag-heatmap-card.html"},
 }
@@ -118,14 +120,18 @@ func buildTagsTree(tagMap map[string][]taggedItem, cfg *config.SiteConfig, regis
 	sort.Strings(sortedTags)
 
 	// Compute min/max counts for weight normalisation.
-	minCount, maxCount := len(tagMap[sortedTags[0]]), len(tagMap[sortedTags[0]])
-	for _, tag := range sortedTags {
-		c := len(tagMap[tag])
-		if c < minCount {
-			minCount = c
-		}
-		if c > maxCount {
-			maxCount = c
+	var minCount, maxCount int
+	if len(sortedTags) > 0 {
+		minCount = len(tagMap[sortedTags[0]])
+		maxCount = minCount
+		for _, tag := range sortedTags {
+			c := len(tagMap[tag])
+			if c < minCount {
+				minCount = c
+			}
+			if c > maxCount {
+				maxCount = c
+			}
 		}
 	}
 
@@ -141,14 +147,11 @@ func buildTagsTree(tagMap map[string][]taggedItem, cfg *config.SiteConfig, regis
 
 		children := make([]config.ItemConfig, 0, len(items))
 		for _, ti := range items {
-			inner, err := registry.New(ti.config.DataSource)
-			if err != nil {
-				continue
-			}
 			child := ti.config
-			child.DataSourceOverride = datasource.NewDecoratedSource(inner, map[string]any{
-				"sourcePath": ti.ancestors,
-			})
+			child.DataSourceOverride = datasource.NewDecoratedSource(
+				datasource.NewMapSource(ti.data),
+				map[string]any{"sourcePath": ti.ancestors},
+			)
 			children = append(children, child)
 		}
 
@@ -161,7 +164,6 @@ func buildTagsTree(tagMap map[string][]taggedItem, cfg *config.SiteConfig, regis
 				Type: config.MapType,
 				Data: map[string]any{
 					"title":  tag,
-					"tag":    tag,
 					"count":  len(items),
 					"weight": weight,
 				},
