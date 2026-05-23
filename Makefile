@@ -16,7 +16,7 @@ test:
 	go test ./...
 
 new-item:
-	go run . new item
+	go run . new item $(ARGS)
 
 new-list:
-	go run . new list
+	go run . new list $(ARGS)

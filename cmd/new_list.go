@@ -77,7 +77,6 @@ func runNewList(cmd *cobra.Command, args []string) error {
 	return createList(cfg, args[0], lc)
 }
 
-
 func createList(cfg *config.SiteConfig, name string, lc newListConfig) error {
 	destDir := filepath.Join(cfg.ContentDir, name)
 
@@ -313,8 +312,7 @@ func toStringSlice(v any) []string {
 	return nil
 }
 
-
-// --- shared helpers (moved from add.go) ---
+// --- shared helpers ---
 
 type listDirMeta struct {
 	title string
