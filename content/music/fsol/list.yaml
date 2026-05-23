@@ -1,0 +1,8 @@
+title: Future Sound of London
+types:
+    - soundcloud
+    - youtube
+    - post
+    - link-plain
+    - link-opengraph
+cardTemplate: music-card.html

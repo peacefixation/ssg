@@ -1,13 +1,30 @@
 .link-opengraph {
   display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-items: flex-start;
   gap: 1rem;
 }
 
-.link-opengraph .og-image {
-  height: 150px;
-  object-fit: contain;
+.link-opengraph .tags {
+  flex-basis: 100%;
+}
+
+.link-opengraph .og-image-wrap {
+  width: 20%;
+  height: 120px;
+  overflow: hidden;
   flex-shrink: 0;
+}
+
+.link-opengraph .og-image {
+  height: 120px;
+  width: auto;
+}
+
+.link-opengraph .og-body {
+  flex: 1;
+  min-width: 0;
 }
 
 .link-opengraph .og-title {

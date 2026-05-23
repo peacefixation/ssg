@@ -1,0 +1,8 @@
+title: Traumprinz
+types:
+    - soundcloud
+    - youtube
+    - post
+    - link-plain
+    - link-opengraph
+cardTemplate: music-card.html

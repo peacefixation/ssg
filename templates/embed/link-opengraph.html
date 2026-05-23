@@ -1,8 +1,8 @@
 {{define "embed/link-opengraph.html"}}
 {{$displayTitle := or .og_title .title}}
-{{if .og_image}}<img class="og-image" src="{{.og_image}}" alt="">{{end}}
 <div class="og-body">
   <p class="og-title"><a class="item-link" href="{{.url}}" target="_blank" rel="noopener noreferrer">{{if .icon}}{{render (printf "icon-%s.html" .icon) .}}{{end}}{{$displayTitle}}</a></p>
   {{if and .og_description (ne .og_description $displayTitle) (ne .og_description .og_site_name)}}<p class="og-description">{{.og_description}}</p>{{end}}
 </div>
+{{if and .og_image (not .hideImage)}}<div class="og-image-wrap"><img class="og-image" src="{{.og_image}}" alt=""></div>{{end}}
 {{end}}

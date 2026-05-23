@@ -1,9 +1,28 @@
 {
+  "https://allpossibleworlds.bandcamp.com/": {
+    "fetchedAt": "2026-05-23T12:28:59.913944634Z",
+    "title": "all possible worlds",
+    "description": "for those who don't know",
+    "image": "https://f4.bcbits.com/img/0040812447_23.jpg",
+    "siteName": "all possible worlds"
+  },
   "https://davidoks.blog/p/why-japanese-companies-do-so-many": {
     "fetchedAt": "2026-05-23T06:53:53.887461218Z",
     "title": "Why Japanese companies do so many different things",
     "description": "The internal logic of the world’s strangest corporations",
     "image": "https://substackcdn.com/image/fetch/$s_!q5kh!,w_1200,h_675,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fff42a7b2-6c27-4773-a0b0-561081c55da1_1605x2000.jpeg"
+  },
+  "https://firstfloor.substack.com/p/traumprinz-life": {
+    "fetchedAt": "2026-05-23T11:53:11.089393776Z",
+    "title": "Traumprinz – Life",
+    "description": "All Possible Worlds",
+    "image": "https://substackcdn.com/image/fetch/$s_!057m!,w_1200,h_675,c_fill,f_jpg,q_auto:good,fl_progressive:steep,g_auto/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F103d876e-f2c2-4235-9705-559fa7e6a6a3_1456x1048.jpeg"
+  },
+  "https://fsol.bandcamp.com/": {
+    "fetchedAt": "2026-05-23T12:41:12.004962787Z",
+    "title": "THE FUTURE SOUND OF LONDON",
+    "image": "https://f4.bcbits.com/img/0021563802_23.jpg",
+    "siteName": "THE FUTURE SOUND OF LONDON"
   },
   "https://jvns.ca/": {
     "fetchedAt": "2026-05-18T01:42:45.148374578Z",
@@ -17,6 +36,20 @@
     "description": "Software infrastructure hot takes, projects, papers, developer interviews, and deep dives. Brought to you by Chris Riccomini. Click to read Materialized View, by Chris, a Substack publication with thousands of subscribers.",
     "image": "https://substackcdn.com/image/fetch/$s_!DZcu!,f_auto,q_auto:best,fl_progressive:steep/https%3A%2F%2Fmaterializedview.substack.com%2Ftwitter%2Fsubscribe-card.jpg%3Fv%3D935158386%26version%3D9"
   },
+  "https://soundcloud.com/irini108": {
+    "fetchedAt": "2026-05-23T12:23:02.527662832Z",
+    "title": "irini",
+    "description": "Listen to irini | SoundCloud is an audio platform that lets you listen to what you love and share the sounds you create.",
+    "image": "https://i1.sndcdn.com/avatars-7p1llHtM5PUAk9LE-cLIPTw-t500x500.jpg",
+    "siteName": "SoundCloud"
+  },
+  "https://soundcloud.com/planet-uterus": {
+    "fetchedAt": "2026-05-23T12:20:27.452721943Z",
+    "title": "planet uterus",
+    "description": "founded 1989. offering a healing place for all dancers, dreamers, lovers and disbelievers. ",
+    "image": "https://i1.sndcdn.com/avatars-000099660028-pai2ar-t500x500.jpg",
+    "siteName": "SoundCloud"
+  },
   "https://thenumb.at/Functions-are-Vectors/": {
     "fetchedAt": "2026-05-23T07:54:14.33943739Z"
   },
@@ -24,6 +57,12 @@
     "fetchedAt": "2026-05-18T23:29:59.034347281Z",
     "title": "Album of The Year - Music Reviews, Ratings, Charts, News",
     "description": "Discover the best albums of 2026. Read critic and user reviews, explore ratings, charts, and year-end lists across every genre."
+  },
+  "https://www.fsoldigital.com/": {
+    "fetchedAt": "2026-05-23T12:41:45.81835251Z",
+    "title": "FSOLdigital - The digital home of FSOL",
+    "description": "FSOLdigital - The digital home of The Future Sound Of London",
+    "siteName": "FSOLdigital"
   },
   "https://www.youtube.com/@3blue1brown": {
     "fetchedAt": "2026-05-23T07:19:25.537355572Z",
