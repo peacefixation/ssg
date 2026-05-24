@@ -1,4 +1,4 @@
 title: Jonathan Lisle
-cardTemplate: embed-card.html
+cardTemplate: card.html
 sortBy: title
 sortOrder: asc

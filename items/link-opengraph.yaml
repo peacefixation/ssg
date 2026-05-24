@@ -1,6 +1,7 @@
 name: OpenGraph Link
 defaults:
   embed: link-opengraph
+  cardTemplate: link-opengraph-card.html
   icon: link
   enrich: opengraph
   externalLink: true

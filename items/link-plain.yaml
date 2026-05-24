@@ -1,6 +1,7 @@
 name: Plain Link
 defaults:
   embed: link-plain
+  cardTemplate: link-plain-card.html
   icon: link
   externalLink: true
 fields:

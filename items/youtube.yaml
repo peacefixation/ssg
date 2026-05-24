@@ -1,6 +1,7 @@
 name: YouTube Video
 defaults:
   embed: youtube
+  cardTemplate: media-embed-card.html
   icon: play
   template: music-item.html
 fields:

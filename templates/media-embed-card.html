@@ -1,10 +1,5 @@
-{{define "embed-card.html"}}
-<div class="item{{if or (eq .embed "link-plain") (eq .embed "link-opengraph")}} {{.embed}}{{end}}">
-  {{if eq .embed "link-plain"}}
-    {{render "embed/link-plain.html" .}}
-  {{else if eq .embed "link-opengraph"}}
-    {{render "embed/link-opengraph.html" .}}
-  {{else if .embed}}
+{{define "media-embed-card.html"}}
+<div class="item">
   <details class="embed-collapsible">
     <summary class="embed-summary">
       <span class="embed-meta">
@@ -16,11 +11,6 @@
       {{render (printf "embed/%s.html" .embed) .}}
     </div>
   </details>
-  {{else}}
-    <a href="/{{.outputPath}}">
-      {{if .icon}}{{render (printf "icon-%s.html" .icon) .}}{{end}}<span class="title">{{.title}}</span>
-    </a>
-  {{end}}
   {{template "tag-links.html" .}}
 </div>
 {{end}}

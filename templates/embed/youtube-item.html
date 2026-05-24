@@ -1,0 +1,14 @@
+{{define "embed/youtube-item.html"}}
+{{$id := youtubeID .url}}
+{{if $id}}
+<div class="embed embed-youtube">
+  <iframe
+    src="https://www.youtube.com/embed/{{$id}}"
+    title="{{.title}}"
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowfullscreen>
+  </iframe>
+</div>
+{{end}}
+{{end}}

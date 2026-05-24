@@ -4,6 +4,6 @@ types:
     - youtube-channel
     - link-plain
     - link-opengraph
-cardTemplate: embed-card.html
+cardTemplate: card.html
 sortBy: date
 sortOrder: asc

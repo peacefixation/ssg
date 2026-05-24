@@ -4,7 +4,7 @@ defaults:
   embed: youtube-channel
   icon: play
   template: youtube-channel-item.html
-  cardTemplate: embed-card.html
+  cardTemplate: media-embed-card.html
 fields:
   - name: channelId
     required: true

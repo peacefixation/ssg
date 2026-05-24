@@ -1,8 +1,9 @@
 title: Music
-cardTemplate: embed-card.html
+cardTemplate: card.html
 types:
   - soundcloud
   - youtube
+  - youtube-channel
   - post
   - link-plain
   - link-opengraph

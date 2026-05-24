@@ -5,7 +5,7 @@
 <body>
   {{template "nav.html" .}}
   {{if .embed}}
-    {{render (printf "embed/%s.html" .embed) .}}
+    {{render (printf "embed/%s-item.html" .embed) .}}
   {{else}}
     {{if .title}}<h1>{{.title}}</h1>{{end}}
     {{.body}}

@@ -5,4 +5,4 @@ types:
     - post
     - link-plain
     - link-opengraph
-cardTemplate: embed-card.html
+cardTemplate: card.html

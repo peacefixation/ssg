@@ -1,0 +1,6 @@
+{{define "link-plain-card.html"}}
+<div class="item link-plain">
+  <a href="{{.url}}" target="_blank" rel="noopener noreferrer">{{if .icon}}{{render (printf "icon-%s.html" .icon) .}}{{end}}<span class="title">{{.title}}</span></a>
+  {{template "tag-links.html" .}}
+</div>
+{{end}}

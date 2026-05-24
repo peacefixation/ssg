@@ -1,7 +1,8 @@
 {{define "card.html"}}
 <div class="item">
-  <a href="{{.url}}" target="_blank" rel="noopener noreferrer">
+  <a href="/{{.outputPath}}">
     {{if .icon}}{{render (printf "icon-%s.html" .icon) .}}{{end}}<span class="title">{{.title}}</span>
   </a>
+  {{template "tag-links.html" .}}
 </div>
 {{end}}
