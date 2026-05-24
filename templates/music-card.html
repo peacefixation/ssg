@@ -5,11 +5,18 @@
   {{else if eq .embed "link-opengraph"}}
     {{render "embed/link-opengraph.html" .}}
   {{else if .embed}}
-  <div class="embed-meta">
-    <a href="/{{.outputPath}}">{{if .icon}}{{render (printf "icon-%s.html" .icon) .}}{{end}}<span class="title">{{.title}}</span></a>
-    {{if .artist}}<span class="artist">{{.artist}}</span>{{end}}
-  </div>
-    {{render (printf "embed/%s.html" .embed) .}}
+  <details class="embed-collapsible">
+    <summary class="embed-summary">
+      <span class="embed-meta">
+        <a href="/{{.outputPath}}">{{if .icon}}{{render (printf "icon-%s.html" .icon) .}}{{end}}<span class="title">{{.title}}</span></a>
+        {{if .artist}}<span class="artist">{{.artist}}</span>{{end}}
+      </span>
+      <span class="embed-toggle-icon">{{render "icon-expand.html" .}}{{render "icon-collapse.html" .}}</span>
+    </summary>
+    <div class="embed-body">
+      {{render (printf "embed/%s.html" .embed) .}}
+    </div>
+  </details>
   {{else}}
     <a href="/{{.outputPath}}">
       {{if .icon}}{{render (printf "icon-%s.html" .icon) .}}{{end}}<span class="title">{{.title}}</span>

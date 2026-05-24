@@ -10,6 +10,7 @@
   --radius:       8px;
   --max-width:    48rem;
   --pad-x:        1.5rem;
+  interpolate-size: allow-keywords;
 }
 
 /* === Reset === */
@@ -255,7 +256,6 @@ blockquote {
 }
 
 .embed-meta {
-  margin-top: 0.625rem;
   display: flex;
   flex-direction: column;
   gap: 0.125rem;
@@ -273,6 +273,63 @@ blockquote {
 .embed-meta .artist {
   font-size: 0.875rem;
   color: var(--muted);
+}
+
+/* === Collapsible embed cards === */
+details.embed-collapsible > summary.embed-summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.625rem;
+}
+
+details.embed-collapsible > summary.embed-summary::-webkit-details-marker {
+  display: none;
+}
+
+.embed-toggle-icon {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+}
+
+.icon-collapse { display: none; }
+details.embed-collapsible[open] .icon-expand { display: none; }
+details.embed-collapsible[open] .icon-collapse { display: inline; }
+
+details.embed-collapsible .embed-body {
+  display: none;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  opacity: 0;
+  transition: display 0.35s allow-discrete,
+              grid-template-rows 0.35s ease,
+              opacity 0.2s ease;
+}
+
+details.embed-collapsible .embed-body > * {
+  min-height: 0;
+  margin-top: 0.75rem;
+}
+
+details.embed-collapsible[open] .embed-body {
+  display: grid;
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transition: display 0.6s allow-discrete,
+              grid-template-rows 0.6s ease-in,
+              opacity 0.5s ease-in;
+}
+
+@starting-style {
+  details[open].embed-collapsible .embed-body {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
 }
 
 /* === Tags index styles === */

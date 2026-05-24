@@ -14,6 +14,9 @@ server:
 
 sitemap: true
 
+staticJS:
+  - js/embed-collapsible.js
+
 defaults:
   page:
     template: item.html

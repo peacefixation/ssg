@@ -428,11 +428,17 @@ func buildItem(
 		return 0, err
 	}
 
+	staticJS := make([]string, len(cfg.StaticJS))
+	for i, f := range cfg.StaticJS {
+		staticJS[i] = "/static/" + f
+	}
+
 	item.Data["Site"] = cfg
 	item.Data["OutputPath"] = item.OutputPath
 	item.Data["RootItems"] = rootNavItems
 	item.Data["List"] = fragments
 	item.Data["Theme"] = themeData
+	item.Data["StaticJS"] = staticJS
 	item.Data["BreadcrumbLinks"] = ancestors
 	item.Data["BreadcrumbCurrent"] = title
 	item.Data["SiteMap"] = siteMap

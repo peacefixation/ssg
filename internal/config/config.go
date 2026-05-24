@@ -14,6 +14,7 @@ type SiteConfig struct {
 	ContentDir   string      `mapstructure:"contentDir"`
 	OutputDir    string      `mapstructure:"outputDir"`
 	StaticDir    string      `mapstructure:"staticDir"`
+	StaticJS     []string    `mapstructure:"staticJS"`
 	TemplateDir  string      `mapstructure:"templateDir"`
 	ThemesDir    string      `mapstructure:"themesDir"`
 	ItemsDir     string      `mapstructure:"itemsDir"`
