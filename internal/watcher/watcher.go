@@ -81,6 +81,13 @@ func (w *Watcher) Run(ctx context.Context) error {
 			if !ok {
 				return nil
 			}
+			if event.Has(fsnotify.Create) {
+				if info, err := os.Stat(event.Name); err == nil && info.IsDir() {
+					if err := w.fw.Add(event.Name); err != nil {
+						fmt.Fprintf(w.errOut, "watcher: failed to watch new directory %s: %v\n", event.Name, err)
+					}
+				}
+			}
 			if !event.Has(fsnotify.Write) && !event.Has(fsnotify.Create) &&
 				!event.Has(fsnotify.Remove) && !event.Has(fsnotify.Rename) {
 				continue
