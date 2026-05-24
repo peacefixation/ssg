@@ -1,8 +1,9 @@
-title: Future Sound of London
+title: Quanta Magazine
 types:
-    - soundcloud
     - youtube
-    - post
+    - youtube-channel
     - link-plain
     - link-opengraph
 cardTemplate: embed-card.html
+sortBy: date
+sortOrder: asc

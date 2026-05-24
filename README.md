@@ -127,6 +127,70 @@ fields:
 
 This produces a `.md` file with a YAML frontmatter block and an empty body for the post content.
 
+## YouTube channels
+
+The `youtube-channel` item type fetches channel metadata and the latest video from the YouTube Data API v3 and renders them as a rich page and card.
+
+### Prerequisites
+
+Create a Google Cloud project, enable the YouTube Data API v3, and generate an API key. Set it in your environment before running a build:
+
+```bash
+export YOUTUBE_DATA_API_KEY=your_api_key_here
+```
+
+Add the variable to a `.env` file to make it persistent:
+
+```
+YOUTUBE_DATA_API_KEY=your_api_key_here
+```
+
+Then source it before building: `export $(cat .env | xargs)`.
+
+### Create a channels list
+
+```bash
+ssg new list channels --title "Channels" --types youtube-channel
+```
+
+### Add a channel
+
+```bash
+ssg new item --list channels --type youtube-channel channelId=UCxxxxxxxxxxxxxxxxxxxxxx title="Channel Name"
+```
+
+Or write the YAML directly:
+
+```yaml
+# content/channels/20260524T120000Z-my-channel.yaml
+type: youtube-channel
+channelId: UCxxxxxxxxxxxxxxxxxxxxxx
+title: My Channel   # fallback title if the API call fails
+```
+
+At build time the following fields are fetched and injected into the item's template data:
+
+| Field | Description |
+|---|---|
+| `yt_channel_title` | Channel display name |
+| `yt_description` | Channel about text |
+| `yt_thumbnail` | Channel thumbnail URL |
+| `yt_subscriber_count` | Subscriber count (string) |
+| `yt_latest_video_id` | Latest video ID |
+| `yt_latest_video_title` | Latest video title |
+
+### Caching
+
+Fetched data is cached in `youtube-cache.json` (configurable via `youtubeCacheFile` in `site.yaml`). Subsequent builds use the cache and make no API calls. Commit this file to avoid hitting API quota on every build.
+
+To re-fetch all channels:
+
+```bash
+ssg build --refresh-yt
+```
+
+To re-fetch a single channel, add `yt_refresh: true` to its content file and remove it after the next build.
+
 ## Custom templates
 
 Any item can override its template by setting a `template` field in its frontmatter or YAML data:

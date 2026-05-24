@@ -8,8 +8,12 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 )
+
+var nonAlphaNum = regexp.MustCompile(`[^a-z0-9-]+`)
 
 // Renderer holds eagerly-parsed templates and renders items and lists.
 type Renderer struct {
@@ -40,6 +44,28 @@ func New(templateDir, themeTemplateDir string) (*Renderer, error) {
 				return ""
 			}
 			return u.Query().Get("v")
+		},
+		// tagSlug converts a tag name to the URL slug used by the tags pipeline.
+		"tagSlug": func(tag string) string {
+			slug := strings.ToLower(tag)
+			slug = strings.ReplaceAll(slug, " ", "-")
+			slug = nonAlphaNum.ReplaceAllString(slug, "")
+			return strings.Trim(slug, "-")
+		},
+		// shortCount formats a numeric string with K/M suffix (e.g. "1234567" → "1.2M").
+		"shortCount": func(s string) string {
+			n, err := strconv.ParseInt(s, 10, 64)
+			if err != nil {
+				return s
+			}
+			switch {
+			case n >= 1_000_000:
+				return strconv.FormatFloat(float64(n)/1_000_000, 'f', 1, 64) + "M"
+			case n >= 1_000:
+				return strconv.FormatFloat(float64(n)/1_000, 'f', 1, 64) + "K"
+			default:
+				return strconv.FormatInt(n, 10)
+			}
 		},
 	}
 

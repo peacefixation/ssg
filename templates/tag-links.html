@@ -1,3 +1,3 @@
 {{define "tag-links.html"}}
-{{if .tags}}<span class="tags">{{range $i, $t := .tags}}{{if $i}} {{end}}<a class="tag" href="/tags/{{$t}}/">{{$t}}</a>{{end}}</span>{{end}}
+{{if .tags}}<span class="tags">{{range $i, $t := .tags}}{{if $i}} {{end}}<a class="tag" href="/tags/{{tagSlug $t}}/">{{$t}}</a>{{end}}</span>{{end}}
 {{end}}

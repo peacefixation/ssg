@@ -1,0 +1,12 @@
+name: YouTube Channel
+defaults:
+  enrich: youtube-channel
+  embed: youtube-channel
+  icon: play
+  template: youtube-channel-item.html
+  cardTemplate: embed-card.html
+fields:
+  - name: channelId
+    required: true
+  - name: title
+    required: true

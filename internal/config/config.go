@@ -23,9 +23,12 @@ type SiteConfig struct {
 	Server       ServerConfig `mapstructure:"server"`
 	Drafts       bool        `mapstructure:"-"`
 	SiteMap      bool        `mapstructure:"sitemap"`
-	OGCacheFile  string      `mapstructure:"ogCacheFile"`
-	RefreshOG    bool        `mapstructure:"-"`
-	Tags         TagsConfig  `mapstructure:"tags"`
+	OGCacheFile      string      `mapstructure:"ogCacheFile"`
+	RefreshOG        bool        `mapstructure:"-"`
+	YouTubeCacheFile string      `mapstructure:"youtubeCacheFile"`
+	RefreshYouTube   bool        `mapstructure:"-"`
+	YouTubeAPIKey    string      `mapstructure:"-"`
+	Tags             TagsConfig  `mapstructure:"tags"`
 }
 
 // SiteMapNode is one node in the site map tree.
@@ -129,6 +132,7 @@ func Load(path string) (*SiteConfig, error) {
 	viper.SetDefault("server.host", "localhost")
 	viper.SetDefault("server.port", 8080)
 	viper.SetDefault("ogCacheFile", "og-cache.json")
+	viper.SetDefault("youtubeCacheFile", "youtube-cache.json")
 
 	var cfg SiteConfig
 	if err := viper.Unmarshal(&cfg); err != nil {

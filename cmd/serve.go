@@ -68,6 +68,7 @@ func runServe(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("loading config: %w", err)
 	}
 	cfg.Drafts = serveDrafts
+	cfg.YouTubeAPIKey = os.Getenv("YOUTUBE_DATA_API_KEY")
 
 	if err := config.Validate(cfg); err != nil {
 		return fmt.Errorf("invalid config: %w", err)
@@ -104,6 +105,7 @@ func runServe(cmd *cobra.Command, args []string) error {
 			return fmt.Errorf("loading config: %w", err)
 		}
 		currentCfg.Drafts = serveDrafts
+		currentCfg.YouTubeAPIKey = os.Getenv("YOUTUBE_DATA_API_KEY")
 		_, err = site.Build(currentCfg, registry, false)
 		return err
 	}

@@ -192,7 +192,8 @@ blockquote {
 }
 
 .item a:has(.icon),
-.embed-meta a:has(.icon) {
+.embed-meta a:has(.icon),
+.embed-meta span:has(.icon) {
   display: inline-flex;
   align-items: center;
   gap: 0.35em;
@@ -392,6 +393,44 @@ details.embed-collapsible[open] .embed-body {
 .tag-heatmap-item .count {
   font-size: 0.75em;
   opacity: 0.8;
+}
+
+.channel-header {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.channel-col-left {
+  flex: 0 0 20%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.channel-thumbnail {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 4px;
+}
+
+.channel-subscribers {
+  margin: 0;
+  font-size: 0.85em;
+  opacity: 0.7;
+}
+
+.channel-col-right {
+  flex: 1;
+}
+
+.channel-title {
+  margin-top: 0;
+}
+
+.channel-description {
+  white-space: pre-line;
 }
 
 .sitemap,

@@ -114,9 +114,22 @@ func Build(cfg *config.SiteConfig, registry *datasource.Registry, clean bool) (i
 		}()
 	}
 
+	var ytEnricher *enricher.YouTubeEnricher
+	if cfg.YouTubeCacheFile != "" && cfg.YouTubeAPIKey != "" {
+		ytEnricher = enricher.NewYouTube(cfg.YouTubeCacheFile, cfg.YouTubeAPIKey)
+		if err := ytEnricher.LoadCache(); err != nil {
+			log.Printf("warning: loading YouTube cache: %v", err)
+		}
+		defer func() {
+			if err := ytEnricher.SaveCache(); err != nil {
+				log.Printf("warning: saving YouTube cache: %v", err)
+			}
+		}()
+	}
+
 	count := 0
 	for _, itemCfg := range rootItems {
-		n, err := buildItem(cfg, itemCfg, registry, r, rootNavItems, themeData, []map[string]any{}, siteMap, ogEnricher)
+		n, err := buildItem(cfg, itemCfg, registry, r, rootNavItems, themeData, []map[string]any{}, siteMap, ogEnricher, ytEnricher)
 		if err != nil {
 			return count, fmt.Errorf("building item %q: %w", itemCfg.Name, err)
 		}
@@ -339,6 +352,7 @@ func buildItem(
 	ancestors []map[string]any,
 	siteMap []config.SiteMapNode,
 	ogEnricher *enricher.OGEnricher,
+	ytEnricher *enricher.YouTubeEnricher,
 ) (int, error) {
 	ds, err := getDS(itemCfg, registry)
 	if err != nil {
@@ -375,6 +389,17 @@ func buildItem(
 				log.Printf("warning: OG enrichment failed for %s: %v", url, err)
 			} else {
 				maps.Copy(item.Data, ogData)
+			}
+		}
+		delete(item.Data, "enrich")
+	} else if enrichType, _ := item.Data["enrich"].(string); enrichType == "youtube-channel" && ytEnricher != nil {
+		if channelID, _ := item.Data["channelId"].(string); channelID != "" {
+			force := cfg.RefreshYouTube || forceRefreshYouTube(item.Data)
+			ytData, err := ytEnricher.Enrich(channelID, force)
+			if err != nil {
+				log.Printf("warning: YouTube enrichment failed for %s: %v", channelID, err)
+			} else {
+				maps.Copy(item.Data, ytData)
 			}
 		}
 		delete(item.Data, "enrich")
@@ -423,7 +448,7 @@ func buildItem(
 	childAncestors[len(ancestors)] = map[string]any{"title": title, "outputPath": item.OutputPath}
 
 	// Recursively build child pages and collect their card fragments.
-	fragments, childCount, err := buildChildren(cfg, itemCfg, registry, r, rootNavItems, themeData, childAncestors, siteMap, ogEnricher)
+	fragments, childCount, err := buildChildren(cfg, itemCfg, registry, r, rootNavItems, themeData, childAncestors, siteMap, ogEnricher, ytEnricher)
 	if err != nil {
 		return 0, err
 	}
@@ -470,6 +495,7 @@ func buildChildren(
 	ancestors []map[string]any,
 	siteMap []config.SiteMapNode,
 	ogEnricher *enricher.OGEnricher,
+	ytEnricher *enricher.YouTubeEnricher,
 ) ([]template.HTML, int, error) {
 	if len(itemCfg.Children) == 0 {
 		return nil, 0, nil
@@ -478,7 +504,7 @@ func buildChildren(
 	// Build every child page first (regardless of limit, so all pages exist).
 	totalCount := 0
 	for _, childCfg := range itemCfg.Children {
-		n, err := buildItem(cfg, childCfg, registry, r, rootNavItems, themeData, ancestors, siteMap, ogEnricher)
+		n, err := buildItem(cfg, childCfg, registry, r, rootNavItems, themeData, ancestors, siteMap, ogEnricher, ytEnricher)
 		if err != nil {
 			return nil, 0, fmt.Errorf("building child %q: %w", childCfg.Name, err)
 		}
@@ -518,6 +544,16 @@ func buildChildren(
 					log.Printf("warning: OG enrichment failed for %s: %v", url, err)
 				} else {
 					maps.Copy(data, ogData)
+				}
+			}
+			delete(data, "enrich")
+		} else if enrichType, _ := data["enrich"].(string); enrichType == "youtube-channel" && ytEnricher != nil {
+			if channelID, _ := data["channelId"].(string); channelID != "" {
+				ytData, err := ytEnricher.Enrich(channelID, cfg.RefreshYouTube || forceRefreshYouTube(data))
+				if err != nil {
+					log.Printf("warning: YouTube enrichment failed for %s: %v", channelID, err)
+				} else {
+					maps.Copy(data, ytData)
 				}
 			}
 			delete(data, "enrich")
@@ -647,6 +683,12 @@ func isDraft(data map[string]any) bool {
 // forceRefreshItem reports whether item data contains og_refresh: true.
 func forceRefreshItem(data map[string]any) bool {
 	b, ok := data["og_refresh"].(bool)
+	return ok && b
+}
+
+// forceRefreshYouTube reports whether item data contains yt_refresh: true.
+func forceRefreshYouTube(data map[string]any) bool {
+	b, ok := data["yt_refresh"].(bool)
 	return ok && b
 }
 

@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	testItemTitle  = "Test Item"
-	testItemSlug   = "20260418-item"
-	testListA      = "list-a"
-	testListB      = "list-b"
+	testItemTitle = "Test Item"
+	testItemSlug  = "20260418-item"
+	testListA     = "list-a"
+	testListB     = "list-b"
 )
 
 // --- appendListToFile ---
@@ -141,7 +141,7 @@ func TestCreateList_InheritsParentCardTemplate(t *testing.T) {
 	if err := os.MkdirAll(parentDir, 0755); err != nil {
 		t.Fatal(err)
 	}
-	parentYAML := "title: Music\ncardTemplate: music-card.html\ntypes:\n  - soundcloud\n  - youtube\n"
+	parentYAML := "title: Music\ncardTemplate: embed-card.html\ntypes:\n  - soundcloud\n  - youtube\n"
 	if err := os.WriteFile(filepath.Join(parentDir, "list.yaml"), []byte(parentYAML), 0644); err != nil {
 		t.Fatal(err)
 	}
@@ -158,8 +158,8 @@ func TestCreateList_InheritsParentCardTemplate(t *testing.T) {
 	if err := yaml.Unmarshal(data, &got); err != nil {
 		t.Fatalf("unmarshalling: %v", err)
 	}
-	if got.CardTemplate != "music-card.html" {
-		t.Errorf("cardTemplate: want music-card.html, got %q", got.CardTemplate)
+	if got.CardTemplate != "embed-card.html" {
+		t.Errorf("cardTemplate: want embed-card.html, got %q", got.CardTemplate)
 	}
 	if len(got.Types) != 2 || got.Types[0] != "soundcloud" || got.Types[1] != "youtube" {
 		t.Errorf("types: want [soundcloud youtube], got %v", got.Types)
@@ -174,7 +174,7 @@ func TestCreateList_ExplicitFlagOverridesParent(t *testing.T) {
 	if err := os.MkdirAll(parentDir, 0755); err != nil {
 		t.Fatal(err)
 	}
-	parentYAML := "title: Music\ncardTemplate: music-card.html\n"
+	parentYAML := "title: Music\ncardTemplate: embed-card.html\n"
 	if err := os.WriteFile(filepath.Join(parentDir, "list.yaml"), []byte(parentYAML), 0644); err != nil {
 		t.Fatal(err)
 	}

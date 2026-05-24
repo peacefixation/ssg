@@ -1,0 +1,83 @@
+{{define "youtube-channel-item.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>{{template "head.html" .}}</head>
+<body>
+  {{template "nav.html" .}}
+  <div class="channel-header">
+    <div class="channel-col-right">
+      <h1 class="channel-title">{{or .yt_channel_title .title}}</h1>
+      {{if .yt_description}}<p class="channel-description">{{.yt_description}}</p>{{end}}
+    </div>
+    <div class="channel-col-left">
+      {{if .yt_thumbnail}}<img class="channel-thumbnail" src="{{.yt_thumbnail}}" alt="{{or .yt_channel_title .title}}">{{end}}
+      {{if .yt_subscriber_count}}<p class="channel-subscribers">{{shortCount .yt_subscriber_count}} subscribers</p>{{end}}
+    </div>
+  </div>
+  {{if .yt_latest_video_id}}
+  <section class="latest-video">
+    <h2>Latest video</h2>
+    {{if .yt_latest_video_title}}<p class="latest-video-title">{{.yt_latest_video_title}}</p>{{end}}
+    <div class="embed embed-youtube">
+      <iframe
+        src="https://www.youtube.com/embed/{{.yt_latest_video_id}}"
+        title="{{.yt_latest_video_title}}"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+    </div>
+  </section>
+  {{end}}
+  {{if .yt_recent_videos}}
+  <section class="recent-videos">
+    <h2>Recent videos</h2>
+    {{range .yt_recent_videos}}
+    <details class="embed-collapsible">
+      <summary class="embed-summary">
+        <span class="embed-meta"><span>{{render "icon-play.html" .}}<span class="title">{{.title}}</span></span></span>
+        <span class="embed-toggle-icon">{{render "icon-expand.html" .}}{{render "icon-collapse.html" .}}</span>
+      </summary>
+      <div class="embed-body">
+        <div class="embed embed-youtube">
+          <iframe
+            data-src="https://www.youtube.com/embed/{{.id}}"
+            title="{{.title}}"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+    </details>
+    {{end}}
+  </section>
+  {{end}}
+  {{if .yt_playlists}}
+  <section class="channel-playlists">
+    <h2>Playlists</h2>
+    {{range .yt_playlists}}
+    <details class="embed-collapsible">
+      <summary class="embed-summary">
+        <span class="embed-meta"><span>{{render "icon-play.html" .}}<span class="title">{{.title}}</span></span></span>
+        <span class="embed-toggle-icon">{{render "icon-expand.html" .}}{{render "icon-collapse.html" .}}</span>
+      </summary>
+      <div class="embed-body">
+        <div class="embed embed-youtube">
+          <iframe
+            data-src="https://www.youtube.com/embed/videoseries?list={{.id}}"
+            title="{{.title}}"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+    </details>
+    {{end}}
+  </section>
+  {{end}}
+  {{template "foot.html" .}}
+</body>
+</html>
+{{end}}

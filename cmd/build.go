@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/peacefixation/ssg/internal/config"
@@ -15,6 +16,7 @@ var (
 	cleanBuild  bool
 	buildDrafts bool
 	refreshOG   bool
+	refreshYT   bool
 )
 
 var buildCmd = &cobra.Command{
@@ -28,6 +30,7 @@ func init() {
 	buildCmd.Flags().BoolVar(&cleanBuild, "clean", false, "clean output directory before build")
 	buildCmd.Flags().BoolVar(&buildDrafts, "drafts", false, "include draft items in the build")
 	buildCmd.Flags().BoolVar(&refreshOG, "refresh-og", false, "bypass OG cache and re-fetch all opengraph items")
+	buildCmd.Flags().BoolVar(&refreshYT, "refresh-yt", false, "bypass YouTube cache and re-fetch all youtube-channel items")
 }
 
 func runBuild(cmd *cobra.Command, args []string) error {
@@ -43,6 +46,8 @@ func runBuild(cmd *cobra.Command, args []string) error {
 	}
 	cfg.Drafts = buildDrafts
 	cfg.RefreshOG = refreshOG
+	cfg.RefreshYouTube = refreshYT
+	cfg.YouTubeAPIKey = os.Getenv("YOUTUBE_DATA_API_KEY")
 
 	if err := config.Validate(cfg); err != nil {
 		return fmt.Errorf("invalid config: %w", err)

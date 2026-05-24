@@ -1,0 +1,13 @@
+{{define "embed/youtube-channel.html"}}
+<div class="embed embed-youtube-channel">
+  {{if .yt_latest_video_id}}
+  <iframe
+    data-src="https://www.youtube.com/embed/{{.yt_latest_video_id}}"
+    title="{{.yt_latest_video_title}}"
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowfullscreen>
+  </iframe>
+  {{end}}
+</div>
+{{end}}

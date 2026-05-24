@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/subosito/gotenv"
 )
 
 var cfgFile string
@@ -27,6 +28,8 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "site.yaml", "config file")
 
 	cobra.OnInitialize(func() {
+		_ = gotenv.Load(".env")
+
 		if cfgFile != "" {
 			viper.SetConfigFile(cfgFile)
 		} else {

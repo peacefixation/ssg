@@ -1,7 +1,10 @@
 title: Youtube
 types:
     - youtube
+    - youtube-channel
     - post
     - link-plain
     - link-opengraph
-cardTemplate: science-card.html
+cardTemplate: embed-card.html
+sortBy: title
+sortOrder: asc
