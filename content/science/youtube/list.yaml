@@ -1,0 +1,7 @@
+title: Youtube
+types:
+    - youtube
+    - post
+    - link-plain
+    - link-opengraph
+cardTemplate: science-card.html

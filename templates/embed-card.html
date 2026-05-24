@@ -1,4 +1,4 @@
-{{define "music-card.html"}}
+{{define "embed-card.html"}}
 <div class="item{{if or (eq .embed "link-plain") (eq .embed "link-opengraph")}} {{.embed}}{{end}}">
   {{if eq .embed "link-plain"}}
     {{render "embed/link-plain.html" .}}
@@ -9,7 +9,6 @@
     <summary class="embed-summary">
       <span class="embed-meta">
         <a href="/{{.outputPath}}">{{if .icon}}{{render (printf "icon-%s.html" .icon) .}}{{end}}<span class="title">{{.title}}</span></a>
-        {{if .artist}}<span class="artist">{{.artist}}</span>{{end}}
       </span>
       <span class="embed-toggle-icon">{{render "icon-expand.html" .}}{{render "icon-collapse.html" .}}</span>
     </summary>

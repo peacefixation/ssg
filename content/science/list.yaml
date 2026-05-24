@@ -1,7 +1,6 @@
-title: Music
+title: Science
 cardTemplate: embed-card.html
 types:
-  - soundcloud
   - youtube
   - post
   - link-plain
