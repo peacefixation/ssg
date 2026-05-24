@@ -6,3 +6,5 @@ types:
   - post
   - link-plain
   - link-opengraph
+sortBy: title
+sortOrder: asc

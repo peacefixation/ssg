@@ -3,6 +3,7 @@ package enricher
 import (
 	"encoding/json"
 	"fmt"
+	"html"
 	"log"
 	"net/http"
 	"os"
@@ -172,8 +173,8 @@ func (e *YouTubeEnricher) fetchChannelInfo(channelID string) (YouTubeCacheEntry,
 	}
 
 	return YouTubeCacheEntry{
-		ChannelTitle:    item.Snippet.Title,
-		Description:     item.Snippet.Description,
+		ChannelTitle:    html.UnescapeString(item.Snippet.Title),
+		Description:     html.UnescapeString(item.Snippet.Description),
 		Thumbnail:       thumbnail,
 		SubscriberCount: item.Statistics.SubscriberCount,
 	}, nil
@@ -219,7 +220,7 @@ func (e *YouTubeEnricher) fetchRecentVideos(channelID string) ([]RecentVideo, er
 		if item.ID.VideoID == "" {
 			continue
 		}
-		videos = append(videos, RecentVideo{ID: item.ID.VideoID, Title: item.Snippet.Title})
+		videos = append(videos, RecentVideo{ID: item.ID.VideoID, Title: html.UnescapeString(item.Snippet.Title)})
 	}
 	return videos, nil
 }
@@ -262,7 +263,7 @@ func (e *YouTubeEnricher) fetchPlaylists(channelID string) ([]Playlist, error) {
 		if item.ID == "" {
 			continue
 		}
-		playlists = append(playlists, Playlist{ID: item.ID, Title: item.Snippet.Title})
+		playlists = append(playlists, Playlist{ID: item.ID, Title: html.UnescapeString(item.Snippet.Title)})
 	}
 	return playlists, nil
 }

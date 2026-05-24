@@ -1,4 +1,5 @@
 .env
+cache/
 public/
 plans/
 ssg

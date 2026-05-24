@@ -464,7 +464,11 @@ func buildItem(
 	item.Data["List"] = fragments
 	item.Data["Theme"] = themeData
 	item.Data["StaticJS"] = staticJS
-	item.Data["BreadcrumbLinks"] = ancestors
+	breadcrumbLinks := ancestors
+	if sp, ok := item.Data["sourcePath"].([]map[string]any); ok {
+		breadcrumbLinks = sp
+	}
+	item.Data["BreadcrumbLinks"] = breadcrumbLinks
 	item.Data["BreadcrumbCurrent"] = title
 	item.Data["SiteMap"] = siteMap
 	item.Data["PageTemplate"] = item.Config.Template

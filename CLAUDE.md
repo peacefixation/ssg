@@ -111,7 +111,8 @@ themesDir: themes
 itemsDir: items          # item type definitions
 theme: default
 sitemap: true            # generate sitemap.xml
-ogCacheFile: og-cache.json  # OpenGraph metadata cache
+ogCacheFile: cache/opengraph.json      # OpenGraph metadata cache
+youtubeCacheFile: cache/youtube-channel.json  # YouTube channel metadata cache
 
 server:
   host: localhost

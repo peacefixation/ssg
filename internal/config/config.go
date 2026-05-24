@@ -131,8 +131,8 @@ func Load(path string) (*SiteConfig, error) {
 	viper.SetDefault("itemsDir", "items")
 	viper.SetDefault("server.host", "localhost")
 	viper.SetDefault("server.port", 8080)
-	viper.SetDefault("ogCacheFile", "og-cache.json")
-	viper.SetDefault("youtubeCacheFile", "youtube-cache.json")
+	viper.SetDefault("ogCacheFile", "cache/opengraph.json")
+	viper.SetDefault("youtubeCacheFile", "cache/youtube-channel.json")
 
 	var cfg SiteConfig
 	if err := viper.Unmarshal(&cfg); err != nil {

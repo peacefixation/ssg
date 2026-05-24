@@ -1,0 +1,10 @@
+title: Astronomy
+types:
+    - youtube
+    - youtube-channel
+    - post
+    - link-plain
+    - link-opengraph
+cardTemplate: embed-card.html
+sortBy: title
+sortOrder: asc

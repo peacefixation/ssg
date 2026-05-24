@@ -1,0 +1,8 @@
+title: Programming
+types:
+    - youtube
+    - youtube-channel
+    - post
+    - link-plain
+    - link-opengraph
+cardTemplate: embed-card.html

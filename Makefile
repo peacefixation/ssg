@@ -22,4 +22,5 @@ new-list:
 	go run . new list $(ARGS)
 
 clean:
-	rm -rf public
+	rm -r public
+	rm -r cache/*

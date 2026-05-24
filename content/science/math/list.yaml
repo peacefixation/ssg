@@ -1,5 +1,7 @@
 title: Math
 cardTemplate: link-card.html
 types:
+  - youtube
+  - youtube-channel
   - link-plain
   - link-opengraph
