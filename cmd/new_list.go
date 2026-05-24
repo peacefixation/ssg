@@ -89,17 +89,21 @@ func createList(cfg *config.SiteConfig, name string, lc newListConfig) error {
 
 	// If the parent directory does not contain a list.yaml it is not a standard
 	// list directory. Check whether it is a file item's sibling container instead.
-	if _, err := os.Stat(filepath.Join(parentDir, "list.yaml")); os.IsNotExist(err) {
-		grandparentDir := filepath.Dir(parentDir)
-		stem := filepath.Base(parentDir)
-		itemPath, found := findFileItemByStem(grandparentDir, stem)
-		if !found {
-			if _, statErr := os.Stat(parentDir); os.IsNotExist(statErr) {
-				return fmt.Errorf("parent directory %s does not exist", parentDir)
+	// The root content directory has no list.yaml by convention and is always valid.
+	parentIsRoot := filepath.Clean(parentDir) == filepath.Clean(cfg.ContentDir)
+	if !parentIsRoot {
+		if _, err := os.Stat(filepath.Join(parentDir, "list.yaml")); os.IsNotExist(err) {
+			grandparentDir := filepath.Dir(parentDir)
+			stem := filepath.Base(parentDir)
+			itemPath, found := findFileItemByStem(grandparentDir, stem)
+			if !found {
+				if _, statErr := os.Stat(parentDir); os.IsNotExist(statErr) {
+					return fmt.Errorf("parent directory %s does not exist", parentDir)
+				}
+				return fmt.Errorf("parent %q is not a list and no matching file item found", parentDir)
 			}
-			return fmt.Errorf("parent %q is not a list and no matching file item found", parentDir)
+			return createFileItemSubList(destDir, parentDir, listName, itemPath, lc)
 		}
-		return createFileItemSubList(destDir, parentDir, listName, itemPath, lc)
 	}
 
 	if parent, err := readListConfig(filepath.Join(parentDir, "list.yaml")); err == nil {
