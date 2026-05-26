@@ -44,6 +44,19 @@ var imageExts = map[string]bool{
 	".gif": true, ".webp": true, ".avif": true,
 }
 
+// Builder holds the invariant context shared across the recursive build and is
+// the receiver for buildItem, buildChildren, and renderChildCards.
+type Builder struct {
+	cfg          *config.SiteConfig
+	registry     *datasource.Registry
+	renderer     *renderer.Renderer
+	rootNavItems []map[string]any
+	themeData    theme.Data
+	siteMap      []config.SiteMapNode
+	ogEnricher   *enricher.OGEnricher
+	ytEnricher   *enricher.YouTubeEnricher
+}
+
 // Build runs the full build pipeline for cfg, writing pages to cfg.OutputDir.
 // It returns the total number of pages written across all items.
 func Build(cfg *config.SiteConfig, registry *datasource.Registry, clean bool) (int, error) {
@@ -134,9 +147,20 @@ func Build(cfg *config.SiteConfig, registry *datasource.Registry, clean bool) (i
 		}()
 	}
 
+	b := &Builder{
+		cfg:          cfg,
+		registry:     registry,
+		renderer:     r,
+		rootNavItems: rootNavItems,
+		themeData:    themeData,
+		siteMap:      siteMap,
+		ogEnricher:   ogEnricher,
+		ytEnricher:   ytEnricher,
+	}
+
 	count := 0
 	for _, itemCfg := range rootItems {
-		n, _, err := buildItem(cfg, itemCfg, registry, r, rootNavItems, themeData, []map[string]any{}, siteMap, ogEnricher, ytEnricher)
+		n, _, err := b.buildItem(itemCfg, []map[string]any{})
 		if err != nil {
 			return count, fmt.Errorf("building item %q: %w", itemCfg.Name, err)
 		}
@@ -387,19 +411,8 @@ func scanFileItem(parentDir, name, outputPrefix string, cfg *config.SiteConfig) 
 // assembles child card fragments into List, injects standard template keys,
 // and writes the output page. Returns the total number of pages written
 // (this item plus all descendants).
-func buildItem(
-	cfg *config.SiteConfig,
-	itemCfg config.ItemConfig,
-	registry *datasource.Registry,
-	r *renderer.Renderer,
-	rootNavItems []map[string]any,
-	themeData theme.Data,
-	ancestors []map[string]any,
-	siteMap []config.SiteMapNode,
-	ogEnricher *enricher.OGEnricher,
-	ytEnricher *enricher.YouTubeEnricher,
-) (int, map[string]any, error) {
-	ds, err := getDS(itemCfg, registry)
+func (b *Builder) buildItem(itemCfg config.ItemConfig, ancestors []map[string]any) (int, map[string]any, error) {
+	ds, err := getDS(itemCfg, b.registry)
 	if err != nil {
 		return 0, nil, fmt.Errorf("creating datasource: %w", err)
 	}
@@ -410,7 +423,7 @@ func buildItem(
 	}
 
 	if typeName, ok := item.Data["type"].(string); ok && typeName != "" {
-		if defaults := loadItemTypeDefaults(cfg.ItemsDir, typeName); defaults != nil {
+		if defaults := loadItemTypeDefaults(b.cfg.ItemsDir, typeName); defaults != nil {
 			applyTypeDefaults(item.Data, defaults)
 		}
 	}
@@ -426,10 +439,10 @@ func buildItem(
 		}
 	}
 
-	if enrichType, _ := item.Data["enrich"].(string); enrichType == "opengraph" && ogEnricher != nil {
+	if enrichType, _ := item.Data["enrich"].(string); enrichType == "opengraph" && b.ogEnricher != nil {
 		if url, _ := item.Data["url"].(string); url != "" {
-			force := cfg.RefreshOG || forceRefreshItem(item.Data)
-			ogData, err := ogEnricher.Enrich(url, force)
+			force := b.cfg.RefreshOG || forceRefreshItem(item.Data)
+			ogData, err := b.ogEnricher.Enrich(url, force)
 			if err != nil {
 				log.Printf("warning: OG enrichment failed for %s: %v", url, err)
 			} else {
@@ -437,10 +450,10 @@ func buildItem(
 			}
 		}
 		delete(item.Data, "enrich")
-	} else if enrichType, _ := item.Data["enrich"].(string); enrichType == "youtube-channel" && ytEnricher != nil {
+	} else if enrichType, _ := item.Data["enrich"].(string); enrichType == "youtube-channel" && b.ytEnricher != nil {
 		if channelID, _ := item.Data["channelId"].(string); channelID != "" {
-			force := cfg.RefreshYouTube || forceRefreshYouTube(item.Data)
-			ytData, err := ytEnricher.Enrich(channelID, force)
+			force := b.cfg.RefreshYouTube || forceRefreshYouTube(item.Data)
+			ytData, err := b.ytEnricher.Enrich(channelID, force)
 			if err != nil {
 				log.Printf("warning: YouTube enrichment failed for %s: %v", channelID, err)
 			} else {
@@ -450,7 +463,7 @@ func buildItem(
 		delete(item.Data, "enrich")
 	}
 
-	if isDraft(item.Data) && !cfg.Drafts {
+	if isDraft(item.Data) && !b.cfg.Drafts {
 		return 0, nil, nil
 	}
 
@@ -470,12 +483,12 @@ func buildItem(
 			if name == "" {
 				continue
 			}
-			sub, ok, err := scanDirItem(siblingDir, name, outputPrefix, cfg, listMeta{
-					CardTemplate: itemCfg.CardTemplate,
-					SortBy:       itemCfg.SortBy,
-					SortOrder:    itemCfg.SortOrder,
-					Limit:        itemCfg.Limit,
-				})
+			sub, ok, err := scanDirItem(siblingDir, name, outputPrefix, b.cfg, listMeta{
+				CardTemplate: itemCfg.CardTemplate,
+				SortBy:       itemCfg.SortBy,
+				SortOrder:    itemCfg.SortOrder,
+				Limit:        itemCfg.Limit,
+			})
 			if err != nil {
 				return 0, nil, fmt.Errorf("scanning sub-list %q of %q: %w", name, itemCfg.Name, err)
 			}
@@ -490,7 +503,7 @@ func buildItem(
 	// so they are accessible by the rendered HTML.
 	if itemCfg.ListType == "photos" {
 		srcDir := filepath.Dir(itemCfg.DataSource.Path)
-		destDir := filepath.Join(cfg.OutputDir, filepath.Dir(itemCfg.OutputPath))
+		destDir := filepath.Join(b.cfg.OutputDir, filepath.Dir(itemCfg.OutputPath))
 		if err := copyImages(srcDir, destDir); err != nil {
 			return 0, nil, fmt.Errorf("copying photos for %q: %w", itemCfg.Name, err)
 		}
@@ -503,13 +516,13 @@ func buildItem(
 	childAncestors[len(ancestors)] = map[string]any{"title": title, "outputPath": item.OutputPath}
 
 	// Recursively build child pages and collect their card fragments.
-	fragments, childCount, err := buildChildren(cfg, itemCfg, registry, r, rootNavItems, themeData, childAncestors, siteMap, ogEnricher, ytEnricher)
+	fragments, childCount, err := b.buildChildren(itemCfg, childAncestors)
 	if err != nil {
 		return 0, nil, err
 	}
 
-	staticJS := make([]string, len(cfg.StaticJS))
-	for i, f := range cfg.StaticJS {
+	staticJS := make([]string, len(b.cfg.StaticJS))
+	for i, f := range b.cfg.StaticJS {
 		staticJS[i] = "/static/" + f
 	}
 
@@ -517,11 +530,11 @@ func buildItem(
 	cardData := make(map[string]any, len(item.Data))
 	maps.Copy(cardData, item.Data)
 
-	item.Data["Site"] = cfg
+	item.Data["Site"] = b.cfg
 	item.Data["OutputPath"] = item.OutputPath
-	item.Data["RootItems"] = rootNavItems
+	item.Data["RootItems"] = b.rootNavItems
 	item.Data["List"] = fragments
-	item.Data["Theme"] = themeData
+	item.Data["Theme"] = b.themeData
 	item.Data["StaticJS"] = staticJS
 	breadcrumbLinks := ancestors
 	if sp, ok := item.Data["sourcePath"].([]map[string]any); ok {
@@ -529,10 +542,10 @@ func buildItem(
 	}
 	item.Data["BreadcrumbLinks"] = breadcrumbLinks
 	item.Data["BreadcrumbCurrent"] = title
-	item.Data["SiteMap"] = siteMap
+	item.Data["SiteMap"] = b.siteMap
 	item.Data["PageTemplate"] = item.Config.Template
 
-	if err := writeItem(cfg.OutputDir, item, r); err != nil {
+	if err := writeItem(b.cfg.OutputDir, item, b.renderer); err != nil {
 		return 0, nil, err
 	}
 
@@ -549,18 +562,7 @@ type childEntry struct {
 // buildChildren builds each child's page recursively and renders card fragments
 // for the parent's List. Enriched data returned by buildItem is reused directly
 // for card rendering so each item is fetched and enriched only once.
-func buildChildren(
-	cfg *config.SiteConfig,
-	itemCfg config.ItemConfig,
-	registry *datasource.Registry,
-	r *renderer.Renderer,
-	rootNavItems []map[string]any,
-	themeData theme.Data,
-	ancestors []map[string]any,
-	siteMap []config.SiteMapNode,
-	ogEnricher *enricher.OGEnricher,
-	ytEnricher *enricher.YouTubeEnricher,
-) ([]template.HTML, int, error) {
+func (b *Builder) buildChildren(itemCfg config.ItemConfig, ancestors []map[string]any) ([]template.HTML, int, error) {
 	if len(itemCfg.Children) == 0 {
 		return nil, 0, nil
 	}
@@ -569,7 +571,7 @@ func buildChildren(
 	entries := make([]childEntry, 0, len(itemCfg.Children))
 	totalCount := 0
 	for _, childCfg := range itemCfg.Children {
-		n, cardData, err := buildItem(cfg, childCfg, registry, r, rootNavItems, themeData, ancestors, siteMap, ogEnricher, ytEnricher)
+		n, cardData, err := b.buildItem(childCfg, ancestors)
 		if err != nil {
 			return nil, 0, fmt.Errorf("building child %q: %w", childCfg.Name, err)
 		}
@@ -596,7 +598,7 @@ func buildChildren(
 		// If this child is itself a list, render its children as card fragments
 		// and inject them as List so card templates can embed nested lists inline.
 		if len(e.cfg.Children) > 0 {
-			grandFragments, err := renderChildCards(cfg, e.cfg, registry, r)
+			grandFragments, err := b.renderChildCards(e.cfg)
 			if err != nil {
 				return nil, 0, fmt.Errorf("rendering nested cards for %q: %w", e.cfg.Name, err)
 			}
@@ -608,7 +610,7 @@ func buildChildren(
 		if t, ok := e.data["cardTemplate"].(string); ok && t != "" {
 			cardTemplate = t
 		}
-		fragment, err := r.RenderCard(cardTemplate, e.data)
+		fragment, err := b.renderer.RenderCard(cardTemplate, e.data)
 		if err != nil {
 			return nil, 0, fmt.Errorf("rendering card for %q: %w", e.cfg.Name, err)
 		}
@@ -621,15 +623,10 @@ func buildChildren(
 // renderChildCards fetches and renders card fragments for itemCfg's children
 // without building their output pages. Used to populate List in card templates
 // when a child is itself a list.
-func renderChildCards(
-	cfg *config.SiteConfig,
-	itemCfg config.ItemConfig,
-	registry *datasource.Registry,
-	r *renderer.Renderer,
-) ([]template.HTML, error) {
+func (b *Builder) renderChildCards(itemCfg config.ItemConfig) ([]template.HTML, error) {
 	entries := make([]childEntry, 0, len(itemCfg.Children))
 	for _, childCfg := range itemCfg.Children {
-		ds, err := getDS(childCfg, registry)
+		ds, err := getDS(childCfg, b.registry)
 		if err != nil {
 			return nil, fmt.Errorf("creating datasource for %q: %w", childCfg.Name, err)
 		}
@@ -638,11 +635,11 @@ func renderChildCards(
 			return nil, fmt.Errorf("fetching data for %q: %w", childCfg.Name, err)
 		}
 		if typeName, ok := data["type"].(string); ok && typeName != "" {
-			if defaults := loadItemTypeDefaults(cfg.ItemsDir, typeName); defaults != nil {
+			if defaults := loadItemTypeDefaults(b.cfg.ItemsDir, typeName); defaults != nil {
 				applyTypeDefaults(data, defaults)
 			}
 		}
-		if isDraft(data) && !cfg.Drafts {
+		if isDraft(data) && !b.cfg.Drafts {
 			continue
 		}
 		data["outputPath"] = childCfg.OutputPath
@@ -662,7 +659,7 @@ func renderChildCards(
 		if t, ok := e.data["cardTemplate"].(string); ok && t != "" {
 			cardTemplate = t
 		}
-		fragment, err := r.RenderCard(cardTemplate, e.data)
+		fragment, err := b.renderer.RenderCard(cardTemplate, e.data)
 		if err != nil {
 			return nil, fmt.Errorf("rendering card for %q: %w", e.cfg.Name, err)
 		}
