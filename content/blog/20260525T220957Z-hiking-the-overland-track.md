@@ -11,6 +11,12 @@ lists:
   - photos
 ---
 
-About 9 months ago a mate talked a few of us into booking the Overland Track, a popular 65 kilometer multi-day hike through the Tasmanian wilderness, starting at Cradle Mountain and ending at Lake St Clair. We didn't ask too many questions, it sounded like a great idea, so we signed up for March 17th, 2026.
+I completed the Overland Track with two mates in March 2026, a popular 65 kilometer multi-day hike through the Tasmanian wilderness, starting at Cradle Mountain and ending at Lake St Clair.
 
-The Overland Track is a popular 65 kilometer multi-day hike through the Tasmanian wilderness, starting at Cradle Mountain and ending at Lake St Clair. We spent the next few months preparing for the hike, getting our gear sorted, and doing a little training, all pretty excited for the adventure ahead.
+We spent 6 days on the track, camping at huts along the way. The weather was excellent, with low cloud and light rain on the first day, followed by sunny days with clear skies.
+
+https://parks.tas.gov.au/explore-our-parks/cradle-mountain/overland-track
+
+https://www.overlandtracktransport.com.au/
+
+Here are some photos to give you a sense of the place.

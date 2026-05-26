@@ -2,4 +2,5 @@ tags:
   - sql
 title: "Good CTE, bad CTE"
 type: link-opengraph
+hideImage: true
 url: https://boringsql.com/posts/good-cte-bad-cte/
