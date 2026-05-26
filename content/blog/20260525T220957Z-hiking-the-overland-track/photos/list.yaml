@@ -1,0 +1,6 @@
+title: Photos
+type: photos
+template: slideshow.html
+cardTemplate: slideshow-card.html
+sortBy: filename
+sortOrder: asc

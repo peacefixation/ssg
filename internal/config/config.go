@@ -74,6 +74,7 @@ type ItemConfig struct {
 	SortBy               string `mapstructure:"sortBy"`
 	SortOrder            string `mapstructure:"sortOrder"`
 	Limit                int    `mapstructure:"limit"`
+	ListType             string `mapstructure:"-"` // "photos" for image-scanning lists
 	ExcludeFromSiteMap   bool   `mapstructure:"-"`
 }
 

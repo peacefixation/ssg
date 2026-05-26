@@ -1,0 +1,6 @@
+{{define "photo-slide.html"}}
+<div class="slide">
+  <img src="{{.src}}" alt="{{if .caption}}{{.caption}}{{else}}{{.title}}{{end}}" loading="lazy">
+  {{if .caption}}<p class="slide-caption">{{.caption}}</p>{{end}}
+</div>
+{{end}}

@@ -16,6 +16,7 @@ sitemap: true
 
 staticJS:
   - js/embed-collapsible.js
+  - js/slideshow.js
 
 defaults:
   page:

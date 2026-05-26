@@ -30,11 +30,18 @@ var contentExts = map[string]bool{
 // overrides (template, cardTemplate, sortBy, sortOrder, limit).
 type listMeta struct {
 	Title        string `yaml:"title"`
+	Type         string `yaml:"type"` // "photos" triggers image-file scanning
 	Template     string `yaml:"template"`
 	CardTemplate string `yaml:"cardTemplate"`
 	SortBy       string `yaml:"sortBy"`
 	SortOrder    string `yaml:"sortOrder"`
 	Limit        int    `yaml:"limit"`
+}
+
+// imageExts is the set of file extensions treated as images in a photos list.
+var imageExts = map[string]bool{
+	".jpg": true, ".jpeg": true, ".png": true,
+	".gif": true, ".webp": true, ".avif": true,
 }
 
 // Build runs the full build pipeline for cfg, writing pages to cfg.OutputDir.
@@ -243,22 +250,60 @@ func scanDir(dir, outputPrefix string, cfg *config.SiteConfig, parent listMeta) 
 	}
 
 	var items []config.ItemConfig
-	for _, entry := range entries {
-		if entry.IsDir() {
-			item, ok, err := scanDirItem(dir, entry.Name(), outputPrefix, cfg, parent)
-			if err != nil {
-				return nil, err
+
+	if parent.Type == "photos" {
+		// Photos directories are handled exclusively here. The regular file loop
+		// is skipped so sidecar .yaml files are not registered as standalone items.
+		for _, entry := range entries {
+			if entry.IsDir() {
+				continue
 			}
-			if ok {
-				items = append(items, item)
+			ext := strings.ToLower(filepath.Ext(entry.Name()))
+			if !imageExts[ext] {
+				continue
 			}
-		} else {
-			item, ok := scanFileItem(dir, entry.Name(), outputPrefix, cfg)
-			if ok {
-				items = append(items, item)
+			stem := strings.TrimSuffix(entry.Name(), filepath.Ext(entry.Name()))
+			baseData := map[string]any{
+				"type":     "photo",
+				"title":    stem,
+				"filename": entry.Name(),
+				"src":      "/" + outputPrefix + entry.Name(),
+			}
+			if sidecar := readSidecar(filepath.Join(dir, stem+".yaml")); sidecar != nil {
+				for k, v := range sidecar {
+					baseData[k] = v
+				}
+			}
+			items = append(items, config.ItemConfig{
+				Name:         stem,
+				Template:     cfg.Defaults.Page.Template,
+				CardTemplate: parent.CardTemplate,
+				OutputPath:   outputPrefix + stem + "/index.html",
+				DataSource: config.DataSourceConfig{
+					Type: config.MapType,
+					Data: baseData,
+				},
+			})
+		}
+	} else {
+		for _, entry := range entries {
+			if entry.IsDir() {
+				item, ok, err := scanDirItem(dir, entry.Name(), outputPrefix, cfg, parent)
+				if err != nil {
+					return nil, err
+				}
+				if ok {
+					items = append(items, item)
+				}
+			} else {
+				item, ok := scanFileItem(dir, entry.Name(), outputPrefix, cfg)
+				if ok {
+					items = append(items, item)
+				}
 			}
 		}
 	}
+
 	return items, nil
 }
 
@@ -287,6 +332,7 @@ func scanDirItem(parentDir, name, outputPrefix string, cfg *config.SiteConfig, p
 	}
 
 	resolved := listMeta{
+		Type:         meta.Type,
 		Template:     tmpl,
 		CardTemplate: cardTemplate,
 		SortBy:       sortBy,
@@ -309,6 +355,7 @@ func scanDirItem(parentDir, name, outputPrefix string, cfg *config.SiteConfig, p
 		SortBy:       sortBy,
 		SortOrder:    sortOrder,
 		Limit:        limit,
+		ListType:     meta.Type,
 	}, true, nil
 }
 
@@ -439,6 +486,16 @@ func buildItem(
 			}
 		}
 		delete(item.Data, "lists")
+	}
+
+	// For photos lists, copy image files from the source directory to the output directory
+	// so they are accessible by the rendered HTML.
+	if itemCfg.ListType == "photos" {
+		srcDir := filepath.Dir(itemCfg.DataSource.Path)
+		destDir := filepath.Join(cfg.OutputDir, filepath.Dir(itemCfg.OutputPath))
+		if err := copyImages(srcDir, destDir); err != nil {
+			return 0, fmt.Errorf("copying photos for %q: %w", itemCfg.Name, err)
+		}
 	}
 
 	// Build the ancestors slice for children: ancestors + this item.
@@ -581,6 +638,16 @@ func buildChildren(
 	// Render a card fragment for each displayed child.
 	fragments := make([]template.HTML, 0, len(entries))
 	for _, e := range entries {
+		// If this child is itself a list, render its children as card fragments
+		// and inject them as List so card templates can embed nested lists inline.
+		if len(e.cfg.Children) > 0 {
+			grandFragments, err := renderChildCards(cfg, e.cfg, registry, r, ogEnricher, ytEnricher)
+			if err != nil {
+				return nil, 0, fmt.Errorf("rendering nested cards for %q: %w", e.cfg.Name, err)
+			}
+			e.data["List"] = grandFragments
+		}
+
 		// Parent list's cardTemplate is the default; child data can override.
 		cardTemplate := itemCfg.CardTemplate
 		if t, ok := e.data["cardTemplate"].(string); ok && t != "" {
@@ -594,6 +661,61 @@ func buildChildren(
 	}
 
 	return fragments, totalCount, nil
+}
+
+// renderChildCards fetches and renders card fragments for itemCfg's children
+// without building their output pages. Used to populate List in card templates
+// when a child is itself a list.
+func renderChildCards(
+	cfg *config.SiteConfig,
+	itemCfg config.ItemConfig,
+	registry *datasource.Registry,
+	r *renderer.Renderer,
+	ogEnricher *enricher.OGEnricher,
+	ytEnricher *enricher.YouTubeEnricher,
+) ([]template.HTML, error) {
+	entries := make([]childEntry, 0, len(itemCfg.Children))
+	for _, childCfg := range itemCfg.Children {
+		ds, err := getDS(childCfg, registry)
+		if err != nil {
+			return nil, fmt.Errorf("creating datasource for %q: %w", childCfg.Name, err)
+		}
+		data, err := ds.FetchOne()
+		if err != nil {
+			return nil, fmt.Errorf("fetching data for %q: %w", childCfg.Name, err)
+		}
+		if typeName, ok := data["type"].(string); ok && typeName != "" {
+			if defaults := loadItemTypeDefaults(cfg.ItemsDir, typeName); defaults != nil {
+				applyTypeDefaults(data, defaults)
+			}
+		}
+		if isDraft(data) && !cfg.Drafts {
+			continue
+		}
+		data["outputPath"] = childCfg.OutputPath
+		entries = append(entries, childEntry{cfg: childCfg, data: data})
+	}
+
+	if itemCfg.SortBy != "" {
+		sortChildEntries(entries, itemCfg.SortBy, itemCfg.SortOrder)
+	}
+	if itemCfg.Limit > 0 && len(entries) > itemCfg.Limit {
+		entries = entries[:itemCfg.Limit]
+	}
+
+	fragments := make([]template.HTML, 0, len(entries))
+	for _, e := range entries {
+		cardTemplate := itemCfg.CardTemplate
+		if t, ok := e.data["cardTemplate"].(string); ok && t != "" {
+			cardTemplate = t
+		}
+		fragment, err := r.RenderCard(cardTemplate, e.data)
+		if err != nil {
+			return nil, fmt.Errorf("rendering card for %q: %w", e.cfg.Name, err)
+		}
+		fragments = append(fragments, fragment)
+	}
+	return fragments, nil
 }
 
 // sortChildEntries sorts entries in-place by the given field in the item data.
@@ -629,6 +751,20 @@ func readListMeta(path string) listMeta {
 	}
 	var m listMeta
 	_ = yaml.Unmarshal(data, &m)
+	return m
+}
+
+// readSidecar reads a YAML sidecar file and returns its contents as a map.
+// Returns nil if the file does not exist or cannot be parsed.
+func readSidecar(path string) map[string]any {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil
+	}
+	var m map[string]any
+	if err := yaml.Unmarshal(data, &m); err != nil {
+		return nil
+	}
 	return m
 }
 
@@ -727,6 +863,31 @@ func copyStaticDir(src, outputDir string) error {
 		}
 		return copyFile(path, dest)
 	})
+}
+
+// copyImages copies all image files from src into dest, preserving filenames.
+// Skips silently if src does not exist.
+func copyImages(src, dest string) error {
+	entries, err := os.ReadDir(src)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		ext := strings.ToLower(filepath.Ext(entry.Name()))
+		if !imageExts[ext] {
+			continue
+		}
+		if err := copyFile(filepath.Join(src, entry.Name()), filepath.Join(dest, entry.Name())); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func copyFile(src, dest string) error {

@@ -1,0 +1,13 @@
+{{define "photo-page.html"}}
+<!DOCTYPE html>
+<html lang="en">
+<head>{{template "head.html" .}}</head>
+<body>
+  {{template "nav.html" .}}
+  <div class="photo-page">
+    <img src="{{.src}}" alt="{{.title}}">
+  </div>
+  {{template "foot.html" .}}
+</body>
+</html>
+{{end}}

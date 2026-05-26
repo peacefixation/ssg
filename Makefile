@@ -1,4 +1,4 @@
-.PHONY: compile site serve watch test new-item new-list clean
+.PHONY: compile site serve watch test new-item new-list clean resize-photos
 
 compile:
 	go build .
@@ -24,3 +24,6 @@ new-list:
 clean:
 	rm -r public
 	rm -r cache/*
+
+resize-photos:
+	for f in $(DIR)/*.JPEG; do convert "$$f" -resize 50% "$$f"; done

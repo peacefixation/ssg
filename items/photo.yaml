@@ -1,0 +1,4 @@
+name: Photo
+defaults:
+  template: photo-page.html
+  cardTemplate: photo-slide.html
