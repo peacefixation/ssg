@@ -60,14 +60,8 @@ type Builder struct {
 // Build runs the full build pipeline for cfg, writing pages to cfg.OutputDir.
 // It returns the total number of pages written across all items.
 func Build(cfg *config.SiteConfig, registry *datasource.Registry, clean bool) (int, error) {
-	if clean {
-		if err := os.RemoveAll(cfg.OutputDir); err != nil {
-			return 0, fmt.Errorf("cleaning output dir: %w", err)
-		}
-	}
-
-	if err := os.MkdirAll(cfg.OutputDir, 0755); err != nil {
-		return 0, fmt.Errorf("creating output dir: %w", err)
+	if err := setupOutput(cfg, clean); err != nil {
+		return 0, err
 	}
 
 	themeData, themeTemplateDir, err := loadTheme(cfg)
@@ -79,7 +73,6 @@ func Build(cfg *config.SiteConfig, registry *datasource.Registry, clean bool) (i
 			return 0, fmt.Errorf("copying theme assets: %w", err)
 		}
 	}
-
 	if cfg.StaticDir != "" {
 		if err := copyStaticDir(cfg.StaticDir, cfg.OutputDir); err != nil {
 			return 0, fmt.Errorf("copying static assets: %w", err)
@@ -95,57 +88,21 @@ func Build(cfg *config.SiteConfig, registry *datasource.Registry, clean bool) (i
 	if err != nil {
 		return 0, err
 	}
-
 	if cfg.Tags.Enabled {
 		tagMap := collectTags(rootItems, registry, nil)
 		tagsItem := buildTagsTree(tagMap, cfg, registry)
 		rootItems = append(rootItems, tagsItem)
 	}
 
-	// Pre-fetch nav data for all root items so every page can render global nav.
-	// The home page (index.html) is excluded — the site title serves as the home link.
-	allNavItems := buildNavItems(rootItems, registry)
-	rootNavItems := make([]map[string]any, 0, len(allNavItems))
-	for _, item := range allNavItems {
-		if item["outputPath"] != "index.html" {
-			rootNavItems = append(rootNavItems, item)
-		}
-	}
+	rootNavItems := buildRootNav(rootItems, registry)
 
 	var siteMap []config.SiteMapNode
 	if cfg.SiteMap {
 		siteMap = buildSiteMap(rootItems, registry, cfg.ItemsDir)
 	}
 
-	var ogEnricher *enricher.OGEnricher
-	if cfg.OGCacheFile != "" {
-		referer := cfg.CanonicalURL
-		if referer == "" {
-			referer = cfg.BaseURL
-		}
-		ogEnricher = enricher.New(cfg.OGCacheFile, referer)
-		if err := ogEnricher.LoadCache(); err != nil {
-			log.Printf("warning: loading OG cache: %v", err)
-		}
-		defer func() {
-			if err := ogEnricher.SaveCache(); err != nil {
-				log.Printf("warning: saving OG cache: %v", err)
-			}
-		}()
-	}
-
-	var ytEnricher *enricher.YouTubeEnricher
-	if cfg.YouTubeCacheFile != "" && cfg.YouTubeAPIKey != "" {
-		ytEnricher = enricher.NewYouTube(cfg.YouTubeCacheFile, cfg.YouTubeAPIKey)
-		if err := ytEnricher.LoadCache(); err != nil {
-			log.Printf("warning: loading YouTube cache: %v", err)
-		}
-		defer func() {
-			if err := ytEnricher.SaveCache(); err != nil {
-				log.Printf("warning: saving YouTube cache: %v", err)
-			}
-		}()
-	}
+	ogEnricher, ytEnricher, cleanup := initEnrichers(cfg)
+	defer cleanup()
 
 	b := &Builder{
 		cfg:          cfg,
@@ -168,6 +125,71 @@ func Build(cfg *config.SiteConfig, registry *datasource.Registry, clean bool) (i
 	}
 
 	return count, nil
+}
+
+// setupOutput cleans (if requested) and creates the output directory.
+func setupOutput(cfg *config.SiteConfig, clean bool) error {
+	if clean {
+		if err := os.RemoveAll(cfg.OutputDir); err != nil {
+			return fmt.Errorf("cleaning output dir: %w", err)
+		}
+	}
+	if err := os.MkdirAll(cfg.OutputDir, 0755); err != nil {
+		return fmt.Errorf("creating output dir: %w", err)
+	}
+	return nil
+}
+
+// buildRootNav fetches nav metadata for all root items and filters out the
+// homepage — the site title serves as the home link in the global nav.
+func buildRootNav(items []config.ItemConfig, registry *datasource.Registry) []map[string]any {
+	all := buildNavItems(items, registry)
+	nav := make([]map[string]any, 0, len(all))
+	for _, item := range all {
+		if item["outputPath"] != "index.html" {
+			nav = append(nav, item)
+		}
+	}
+	return nav
+}
+
+// initEnrichers creates and warms the OG and YouTube enrichers from cfg.
+// The returned cleanup func saves both caches and should be deferred by the caller.
+func initEnrichers(cfg *config.SiteConfig) (*enricher.OGEnricher, *enricher.YouTubeEnricher, func()) {
+	var og *enricher.OGEnricher
+	if cfg.OGCacheFile != "" {
+		referer := cfg.CanonicalURL
+		if referer == "" {
+			referer = cfg.BaseURL
+		}
+		og = enricher.New(cfg.OGCacheFile, referer)
+		if err := og.LoadCache(); err != nil {
+			log.Printf("warning: loading OG cache: %v", err)
+		}
+	}
+
+	var yt *enricher.YouTubeEnricher
+	if cfg.YouTubeCacheFile != "" && cfg.YouTubeAPIKey != "" {
+		yt = enricher.NewYouTube(cfg.YouTubeCacheFile, cfg.YouTubeAPIKey)
+		if err := yt.LoadCache(); err != nil {
+			log.Printf("warning: loading YouTube cache: %v", err)
+		}
+	}
+
+	cleanup := func() {
+		if og != nil {
+			if err := og.SaveCache(); err != nil {
+				log.Printf("warning: saving OG cache: %v", err)
+			}
+		}
+		if yt != nil {
+			if err := yt.SaveCache(); err != nil {
+				log.Printf("warning: saving YouTube cache: %v", err)
+			}
+		}
+	}
+
+	return og, yt, cleanup
 }
 
 // loadTheme reads the theme config (if a theme is set) and returns the theme
