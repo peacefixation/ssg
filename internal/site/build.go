@@ -750,17 +750,6 @@ func applyTypeDefaults(data map[string]any, defaults map[string]any) {
 	}
 }
 
-// excludeSelf returns rootNavItems without the entry whose outputPath matches currentPath.
-// func excludeSelf(items []map[string]any, currentPath string) []map[string]any {
-// 	result := make([]map[string]any, 0, len(items))
-// 	for _, item := range items {
-// 		if item["outputPath"] != currentPath {
-// 			result = append(result, item)
-// 		}
-// 	}
-// 	return result
-// }
-
 // stemOf returns the filename stem of path (base name without extension).
 func stemOf(path string) string {
 	base := filepath.Base(path)
