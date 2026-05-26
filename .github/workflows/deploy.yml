@@ -24,11 +24,17 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Restore OG cache
+        uses: actions/cache@v5
+        with:
+          path: cache/
+          key: enrichment-cache
+
       - name: Build SSG
         run: go build -o ssg .
 
       - name: Build site
-        run: ./ssg build
+        run: mkdir -p cache && ./ssg build
 
       - uses: actions/upload-pages-artifact@v5
         with:
