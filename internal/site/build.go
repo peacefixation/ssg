@@ -592,29 +592,20 @@ func (b *Builder) buildChildren(itemCfg config.ItemConfig, ancestors []map[strin
 		entries = entries[:itemCfg.Limit]
 	}
 
-	// Render a card fragment for each displayed child.
-	fragments := make([]template.HTML, 0, len(entries))
-	for _, e := range entries {
-		// If this child is itself a list, render its children as card fragments
-		// and inject them as List so card templates can embed nested lists inline.
-		if len(e.cfg.Children) > 0 {
-			grandFragments, err := b.renderChildCards(e.cfg)
+	// Inject nested list fragments before rendering cards.
+	for i := range entries {
+		if len(entries[i].cfg.Children) > 0 {
+			grandFragments, err := b.renderChildCards(entries[i].cfg)
 			if err != nil {
-				return nil, 0, fmt.Errorf("rendering nested cards for %q: %w", e.cfg.Name, err)
+				return nil, 0, fmt.Errorf("rendering nested cards for %q: %w", entries[i].cfg.Name, err)
 			}
-			e.data["List"] = grandFragments
+			entries[i].data["List"] = grandFragments
 		}
+	}
 
-		// Parent list's cardTemplate is the default; child data can override.
-		cardTemplate := itemCfg.CardTemplate
-		if t, ok := e.data["cardTemplate"].(string); ok && t != "" {
-			cardTemplate = t
-		}
-		fragment, err := b.renderer.RenderCard(cardTemplate, e.data)
-		if err != nil {
-			return nil, 0, fmt.Errorf("rendering card for %q: %w", e.cfg.Name, err)
-		}
-		fragments = append(fragments, fragment)
+	fragments, err := b.renderCards(itemCfg, entries)
+	if err != nil {
+		return nil, 0, err
 	}
 
 	return fragments, totalCount, nil
@@ -653,9 +644,15 @@ func (b *Builder) renderChildCards(itemCfg config.ItemConfig) ([]template.HTML, 
 		entries = entries[:itemCfg.Limit]
 	}
 
+	return b.renderCards(itemCfg, entries)
+}
+
+// renderCards renders a card fragment for each entry using the parent list's
+// card template (overridable per entry). Entries must already be sorted and limited.
+func (b *Builder) renderCards(parent config.ItemConfig, entries []childEntry) ([]template.HTML, error) {
 	fragments := make([]template.HTML, 0, len(entries))
 	for _, e := range entries {
-		cardTemplate := itemCfg.CardTemplate
+		cardTemplate := parent.CardTemplate
 		if t, ok := e.data["cardTemplate"].(string); ok && t != "" {
 			cardTemplate = t
 		}
