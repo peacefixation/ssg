@@ -1,5 +1,5 @@
 title: Peace Fixation
-baseURL: http://localhost:8080
+baseURL: https://peacefixation.github.io
 canonicalURL: https://peacefixation.github.io
 contentDir: content
 outputDir: public
