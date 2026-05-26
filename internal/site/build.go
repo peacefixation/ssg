@@ -136,7 +136,7 @@ func Build(cfg *config.SiteConfig, registry *datasource.Registry, clean bool) (i
 
 	count := 0
 	for _, itemCfg := range rootItems {
-		n, err := buildItem(cfg, itemCfg, registry, r, rootNavItems, themeData, []map[string]any{}, siteMap, ogEnricher, ytEnricher)
+		n, _, err := buildItem(cfg, itemCfg, registry, r, rootNavItems, themeData, []map[string]any{}, siteMap, ogEnricher, ytEnricher)
 		if err != nil {
 			return count, fmt.Errorf("building item %q: %w", itemCfg.Name, err)
 		}
@@ -270,9 +270,7 @@ func scanDir(dir, outputPrefix string, cfg *config.SiteConfig, parent listMeta) 
 				"src":      "/" + outputPrefix + entry.Name(),
 			}
 			if sidecar := readSidecar(filepath.Join(dir, stem+".yaml")); sidecar != nil {
-				for k, v := range sidecar {
-					baseData[k] = v
-				}
+				maps.Copy(baseData, sidecar)
 			}
 			items = append(items, config.ItemConfig{
 				Name:         stem,
@@ -400,15 +398,15 @@ func buildItem(
 	siteMap []config.SiteMapNode,
 	ogEnricher *enricher.OGEnricher,
 	ytEnricher *enricher.YouTubeEnricher,
-) (int, error) {
+) (int, map[string]any, error) {
 	ds, err := getDS(itemCfg, registry)
 	if err != nil {
-		return 0, fmt.Errorf("creating datasource: %w", err)
+		return 0, nil, fmt.Errorf("creating datasource: %w", err)
 	}
 
 	item, err := NewItem(itemCfg, ds)
 	if err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 
 	if typeName, ok := item.Data["type"].(string); ok && typeName != "" {
@@ -453,7 +451,7 @@ func buildItem(
 	}
 
 	if isDraft(item.Data) && !cfg.Drafts {
-		return 0, nil
+		return 0, nil, nil
 	}
 
 	// Allow frontmatter / list.yaml to override the page template.
@@ -479,7 +477,7 @@ func buildItem(
 					Limit:        itemCfg.Limit,
 				})
 			if err != nil {
-				return 0, fmt.Errorf("scanning sub-list %q of %q: %w", name, itemCfg.Name, err)
+				return 0, nil, fmt.Errorf("scanning sub-list %q of %q: %w", name, itemCfg.Name, err)
 			}
 			if ok {
 				itemCfg.Children = append(itemCfg.Children, sub)
@@ -494,7 +492,7 @@ func buildItem(
 		srcDir := filepath.Dir(itemCfg.DataSource.Path)
 		destDir := filepath.Join(cfg.OutputDir, filepath.Dir(itemCfg.OutputPath))
 		if err := copyImages(srcDir, destDir); err != nil {
-			return 0, fmt.Errorf("copying photos for %q: %w", itemCfg.Name, err)
+			return 0, nil, fmt.Errorf("copying photos for %q: %w", itemCfg.Name, err)
 		}
 	}
 
@@ -507,13 +505,17 @@ func buildItem(
 	// Recursively build child pages and collect their card fragments.
 	fragments, childCount, err := buildChildren(cfg, itemCfg, registry, r, rootNavItems, themeData, childAncestors, siteMap, ogEnricher, ytEnricher)
 	if err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 
 	staticJS := make([]string, len(cfg.StaticJS))
 	for i, f := range cfg.StaticJS {
 		staticJS[i] = "/static/" + f
 	}
+
+	// Snapshot enriched data for card rendering before page-specific fields are injected.
+	cardData := make(map[string]any, len(item.Data))
+	maps.Copy(cardData, item.Data)
 
 	item.Data["Site"] = cfg
 	item.Data["OutputPath"] = item.OutputPath
@@ -531,10 +533,10 @@ func buildItem(
 	item.Data["PageTemplate"] = item.Config.Template
 
 	if err := writeItem(cfg.OutputDir, item, r); err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 
-	return childCount + 1, nil
+	return childCount + 1, cardData, nil
 }
 
 // childEntry pairs an ItemConfig with the fetched data needed for sorting and
@@ -544,8 +546,9 @@ type childEntry struct {
 	data map[string]any
 }
 
-// buildChildren builds each child's page recursively, then fetches child data,
-// sorts, applies limit, and renders card fragments for the parent's List.
+// buildChildren builds each child's page recursively and renders card fragments
+// for the parent's List. Enriched data returned by buildItem is reused directly
+// for card rendering so each item is fetched and enriched only once.
 func buildChildren(
 	cfg *config.SiteConfig,
 	itemCfg config.ItemConfig,
@@ -562,69 +565,21 @@ func buildChildren(
 		return nil, 0, nil
 	}
 
-	// Build every child page first (regardless of limit, so all pages exist).
+	// Build every child page and collect the pre-injection card data in one pass.
+	entries := make([]childEntry, 0, len(itemCfg.Children))
 	totalCount := 0
 	for _, childCfg := range itemCfg.Children {
-		n, err := buildItem(cfg, childCfg, registry, r, rootNavItems, themeData, ancestors, siteMap, ogEnricher, ytEnricher)
+		n, cardData, err := buildItem(cfg, childCfg, registry, r, rootNavItems, themeData, ancestors, siteMap, ogEnricher, ytEnricher)
 		if err != nil {
 			return nil, 0, fmt.Errorf("building child %q: %w", childCfg.Name, err)
 		}
 		totalCount += n
-	}
-
-	// Fetch child data for sorting and card rendering.
-	entries := make([]childEntry, 0, len(itemCfg.Children))
-	for _, childCfg := range itemCfg.Children {
-		ds, err := getDS(childCfg, registry)
-		if err != nil {
-			return nil, 0, fmt.Errorf("creating datasource for child %q: %w", childCfg.Name, err)
+		if cardData == nil {
+			continue // draft item
 		}
-		data, err := ds.FetchOne()
-		if err != nil {
-			return nil, 0, fmt.Errorf("fetching data for child %q: %w", childCfg.Name, err)
-		}
-		if typeName, ok := data["type"].(string); ok && typeName != "" {
-			if defaults := loadItemTypeDefaults(cfg.ItemsDir, typeName); defaults != nil {
-				applyTypeDefaults(data, defaults)
-			}
-		}
-		if _, ok := data["icon"]; !ok {
-			if strings.HasSuffix(childCfg.DataSource.Path, "list.yaml") {
-				data["icon"] = "list"
-			} else {
-				ext := strings.ToLower(filepath.Ext(childCfg.DataSource.Path))
-				if ext == ".md" || ext == ".markdown" {
-					data["icon"] = "post"
-				}
-			}
-		}
-		if enrichType, _ := data["enrich"].(string); enrichType == "opengraph" && ogEnricher != nil {
-			if url, _ := data["url"].(string); url != "" {
-				ogData, err := ogEnricher.Enrich(url, cfg.RefreshOG || forceRefreshItem(data))
-				if err != nil {
-					log.Printf("warning: OG enrichment failed for %s: %v", url, err)
-				} else {
-					maps.Copy(data, ogData)
-				}
-			}
-			delete(data, "enrich")
-		} else if enrichType, _ := data["enrich"].(string); enrichType == "youtube-channel" && ytEnricher != nil {
-			if channelID, _ := data["channelId"].(string); channelID != "" {
-				ytData, err := ytEnricher.Enrich(channelID, cfg.RefreshYouTube || forceRefreshYouTube(data))
-				if err != nil {
-					log.Printf("warning: YouTube enrichment failed for %s: %v", channelID, err)
-				} else {
-					maps.Copy(data, ytData)
-				}
-			}
-			delete(data, "enrich")
-		}
-		if isDraft(data) && !cfg.Drafts {
-			continue
-		}
-		data["outputPath"] = childCfg.OutputPath
-		data["count"] = len(childCfg.Children)
-		entries = append(entries, childEntry{cfg: childCfg, data: data})
+		cardData["outputPath"] = childCfg.OutputPath
+		cardData["count"] = len(childCfg.Children)
+		entries = append(entries, childEntry{cfg: childCfg, data: cardData})
 	}
 
 	// Sort and apply limit.
@@ -641,7 +596,7 @@ func buildChildren(
 		// If this child is itself a list, render its children as card fragments
 		// and inject them as List so card templates can embed nested lists inline.
 		if len(e.cfg.Children) > 0 {
-			grandFragments, err := renderChildCards(cfg, e.cfg, registry, r, ogEnricher, ytEnricher)
+			grandFragments, err := renderChildCards(cfg, e.cfg, registry, r)
 			if err != nil {
 				return nil, 0, fmt.Errorf("rendering nested cards for %q: %w", e.cfg.Name, err)
 			}
@@ -671,8 +626,6 @@ func renderChildCards(
 	itemCfg config.ItemConfig,
 	registry *datasource.Registry,
 	r *renderer.Renderer,
-	ogEnricher *enricher.OGEnricher,
-	ytEnricher *enricher.YouTubeEnricher,
 ) ([]template.HTML, error) {
 	entries := make([]childEntry, 0, len(itemCfg.Children))
 	for _, childCfg := range itemCfg.Children {

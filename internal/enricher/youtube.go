@@ -51,6 +51,26 @@ func NewYouTube(cacheFile, apiKey string) *YouTubeEnricher {
 	}
 }
 
+// doRequest performs a GET to url, retrying up to 3 times on 429 with
+// exponential backoff (1s, 2s). Returns an error when all attempts are exhausted.
+func (e *YouTubeEnricher) doRequest(url string) (*http.Response, error) {
+	for i, delay := 0, time.Second; i < 3; i, delay = i+1, delay*2 {
+		resp, err := e.httpClient.Get(url)
+		if err != nil {
+			return nil, err
+		}
+		if resp.StatusCode != http.StatusTooManyRequests {
+			return resp, nil
+		}
+		resp.Body.Close()
+		if i < 2 {
+			log.Printf("youtube: rate limited (429), retrying in %s", delay)
+			time.Sleep(delay)
+		}
+	}
+	return nil, fmt.Errorf("rate limited after 3 attempts")
+}
+
 // LoadCache reads the cache file into memory. A missing file is not an error.
 func (e *YouTubeEnricher) LoadCache() error {
 	data, err := os.ReadFile(e.cacheFile)
@@ -141,7 +161,7 @@ func (e *YouTubeEnricher) fetchChannelInfo(channelID string) (YouTubeCacheEntry,
 		channelID, e.apiKey,
 	)
 
-	resp, err := e.httpClient.Get(url)
+	resp, err := e.doRequest(url)
 	if err != nil {
 		return YouTubeCacheEntry{}, fmt.Errorf("fetching channel info for %s: %w", channelID, err)
 	}
@@ -199,7 +219,7 @@ func (e *YouTubeEnricher) fetchRecentVideos(channelID string) ([]RecentVideo, er
 		channelID, e.apiKey,
 	)
 
-	resp, err := e.httpClient.Get(url)
+	resp, err := e.doRequest(url)
 	if err != nil {
 		return nil, fmt.Errorf("fetching recent videos for %s: %w", channelID, err)
 	}
@@ -242,7 +262,7 @@ func (e *YouTubeEnricher) fetchPlaylists(channelID string) ([]Playlist, error) {
 		channelID, e.apiKey,
 	)
 
-	resp, err := e.httpClient.Get(url)
+	resp, err := e.doRequest(url)
 	if err != nil {
 		return nil, fmt.Errorf("fetching playlists for %s: %w", channelID, err)
 	}
